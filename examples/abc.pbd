@@ -28,3 +28,9 @@ char b {
         0......0,
     }
 }
+
+char c {
+    base {
+        from_char(a)
+    }
+}

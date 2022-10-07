@@ -17,6 +17,26 @@ class PrettyBirdInterpreter(Interpreter):
         """Initialize values for character declaration statements
         """
         self.current_symbol = None
+    
+    def get_symbol(self, identifier, raise_error=True):
+        """Gets a symbol from self.symbols_dict and does error checking
+
+        Args:
+            identifier (str): Identifier of Symbol to retrieve
+            raise_error (bool, optional): If True, raise an error if the identifier has not been defined. Defaults to True.
+
+        Raises:
+            KeyError: If raise_error and identifier has not been defined
+
+        Returns:
+            Symbol: None if not raise_error and identifier has not been defined, otherwise the Symbol being searched for
+        """
+        if identifier not in self.symbols_dict:
+            if raise_error:
+                raise KeyError(f"Symbol \"{identifier}\" not defined")
+            else:
+                return None
+        return self.symbols_dict[identifier]
 
     def character_declaration(self, declaration_tree):
         """Process character declaration
@@ -63,6 +83,14 @@ class PrettyBirdInterpreter(Interpreter):
             int(width_token.value), int(height_token.value))
 
     def constant_base_statement(self, constant_tree):
+        """Set a character's base to a pre-set value
+
+        Args:
+            constant_tree (lark.tree.Tree): Tree containing the pre-set grid information
+
+        Raises:
+            TypeError: If the parse tree contains an object that is neither a Token nor a Tree
+        """
         for constant_base_statement_character in constant_tree.children:
             if type(constant_base_statement_character) == Token:
                 self.current_symbol.append_to_grid(constant_base_statement_character.value)
@@ -71,3 +99,12 @@ class PrettyBirdInterpreter(Interpreter):
                 self.constant_base_statement(constant_base_statement_character)
             else:
                 raise TypeError(f"Unexpected type {type(constant_base_statement_character)} in constant_base_statement")
+    
+    def from_character_base_statement(self, character_base_tree):
+        """Set a character's base to another character's computed value
+
+        Args:
+            character_base_tree (_type_): _description_
+        """
+        from_identifier = character_base_tree.children[0].value
+        self.current_symbol.grid = self.get_symbol(from_identifier).grid

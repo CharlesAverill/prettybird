@@ -30,10 +30,10 @@ def main():
     interpreter = PrettyBirdInterpreter()
 
     with open(args.input_file, "r") as input_file:
-        # Parse the source file into an AST
-        AST = parser.parse(input_file.read())
+        # Parse the source file into a parse_tree
+        parse_tree = parser.parse(input_file.read())
         # Pass the AST through the Interpreter
-        interpreter.visit(AST)
+        interpreter.visit(parse_tree)
 
     for symbol in interpreter.symbols_dict.values():
         print(symbol)
