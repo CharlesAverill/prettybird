@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "prettybird"
+version = "0.1.0"
+description = ""
+authors = ["Charles Averill <charlesaverill20@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+lark = "^1.1.2"
+pathlib = "^1.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+prettybird = "prettybird.prettybird:main"

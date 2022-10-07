@@ -1,0 +1,65 @@
+?start: character+
+    
+character: "char" IDENTIFIER "{" character_statements "}"
+
+character_statements: character_statement
+                    | character_statement character_statements
+
+character_statement: "base" "{" base_statement "}"
+                   | "steps" steps_statements
+
+base_statement: blank_statement
+              | constant_base_statement
+
+blank_statement: "blank" "(" INT "," INT ")"
+
+constant_base_statement: CONSTANT_BASE_STATEMENT_CHARACTER+ "," constant_base_statement
+                       | CONSTANT_BASE_STATEMENT_CHARACTER+ ","
+                       | CONSTANT_BASE_STATEMENT_CHARACTER+
+
+steps_statements: "{" "}"
+                | "{" steps_statement+ "}"
+
+steps_statement: UPDATE_MODE step
+               | UPDATE_MODE "filled" step
+
+step: vector_step
+    | circle_step
+    | ellipse_step
+    | square_step
+    | rectangle_step
+
+// Line from first point to second point
+vector_step: "vector" "(" point "," point ")"
+
+// Circle with center at point and with radius INT
+circle_step: "circle" "(" point "," INT ")"
+
+// Ellipse with center at point, width INT, height INT
+ellipse_step: "ellipse" "(" point "," INT "," INT ")"
+
+// Square with top left at point and side length INT
+square_step: "square" "(" point "," INT ")"
+
+// Rectangle with top left at point, width INT, height INT
+rectangle_step: "rectangle" "(" point "," INT "," INT ")"
+
+point: "(" INT "," INT ")"
+
+UPDATE_MODE: ("draw" | "erase")
+
+CONSTANT_BASE_STATEMENT_CHARACTER: ("0" | ".")
+
+IDENTIFIER: CNAME
+
+SINGLE_LINE_COMMENT: "//" /[^\n]*/ "\n"
+MULTI_LINE_COMMENT: "/*" /(.|\n)+/ "*/"
+
+WHITESPACE: /\s+/
+
+%ignore SINGLE_LINE_COMMENT
+%ignore MULTI_LINE_COMMENT
+%ignore WHITESPACE
+
+%import common.CNAME
+%import common.INT
