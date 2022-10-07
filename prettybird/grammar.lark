@@ -8,14 +8,17 @@ character_statements: character_statement
 character_statement: "base" "{" base_statement "}"
                    | "steps" steps_statements
 
-base_statement: blank_statement
-              | constant_base_statement
+?base_statement: blank_statement
+               | constant_base_statement
+               | from_character_base_statement
 
 blank_statement: "blank" "(" INT "," INT ")"
 
 constant_base_statement: CONSTANT_BASE_STATEMENT_CHARACTER+ "," constant_base_statement
                        | CONSTANT_BASE_STATEMENT_CHARACTER+ ","
                        | CONSTANT_BASE_STATEMENT_CHARACTER+
+
+from_character_base_statement: "from_char" "(" IDENTIFIER ")"
 
 steps_statements: "{" "}"
                 | "{" steps_statement+ "}"
@@ -48,7 +51,7 @@ point: "(" INT "," INT ")"
 
 UPDATE_MODE: ("draw" | "erase")
 
-CONSTANT_BASE_STATEMENT_CHARACTER: ("0" | ".")
+CONSTANT_BASE_STATEMENT_CHARACTER: ("0" | "." | "#")
 
 IDENTIFIER: CNAME
 
