@@ -5,6 +5,7 @@ from lark import Lark
 
 from prettybird import PrettyBirdInterpreter
 
+
 def get_args():
     """Parse command line arguments
 
@@ -16,6 +17,7 @@ def get_args():
     parser.add_argument("input_file", help=".pbd file to compile", type=str)
 
     return parser.parse_args()
+
 
 def main():
     # Get command-line arguments
@@ -32,7 +34,7 @@ def main():
         AST = parser.parse(input_file.read())
         # Pass the AST through the Interpreter
         interpreter.visit(AST)
-    
+
     for symbol in interpreter.symbols_dict.values():
         print(symbol)
 

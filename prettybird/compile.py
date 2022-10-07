@@ -1,6 +1,10 @@
+from lark.lexer import Token
+from lark.tree import Tree
 from lark.visitors import Interpreter
+
 from .symbol import Symbol
 from .utils.string_utils import get_empty_grid
+
 
 class PrettyBirdInterpreter(Interpreter):
     def __init__(self):
@@ -8,12 +12,12 @@ class PrettyBirdInterpreter(Interpreter):
         """
         self.symbols_dict = {}
         self.current_symbol = None
-    
+
     def setup_character_declaration(self):
         """Initialize values for character declaration statements
         """
         self.current_symbol = None
-    
+
     def character_declaration(self, declaration_tree):
         """Process character declaration
 
@@ -29,15 +33,15 @@ class PrettyBirdInterpreter(Interpreter):
         identifier_name = identifier_token.value
 
         # Check if character has already been defined
-        if(identifier_name in self.symbols_dict):
+        if (identifier_name in self.symbols_dict):
             raise NameError(f"Identifier \"{identifier_name}\" already exists")
-        
+
         self.symbols_dict[identifier_name] = Symbol(identifier_name)
 
         self.current_symbol = self.symbols_dict[identifier_name]
 
         self.visit_children(declaration_tree)
-    
+
     def blank_statement(self, blank_tree):
         """Set a character's base to a blank base
 
@@ -49,9 +53,21 @@ class PrettyBirdInterpreter(Interpreter):
         """
         # Check if character's base has already been defined
         if self.current_symbol.parsed_base:
-            raise SyntaxError(f"Character \"{self.current_symbol}\" already defined a base")
-        
+            raise SyntaxError(
+                f"Character \"{self.current_symbol}\" already defined a base")
+
         width_token = blank_tree.children[0]
         height_token = blank_tree.children[1]
 
-        self.current_symbol.grid =  get_empty_grid(int(width_token.value), int(height_token.value))
+        self.current_symbol.grid = get_empty_grid(
+            int(width_token.value), int(height_token.value))
+
+    def constant_base_statement(self, constant_tree):
+        for constant_base_statement_character in constant_tree.children:
+            if type(constant_base_statement_character) == Token:
+                self.current_symbol.append_to_grid(constant_base_statement_character.value)
+            elif type(constant_base_statement_character) == Tree:
+                self.current_symbol.append_to_grid("\n")
+                self.constant_base_statement(constant_base_statement_character)
+            else:
+                raise TypeError(f"Unexpected type {type(constant_base_statement_character)} in constant_base_statement")

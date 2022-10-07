@@ -51,7 +51,7 @@ point: "(" INT "," INT ")"
 
 UPDATE_MODE: ("draw" | "erase")
 
-CONSTANT_BASE_STATEMENT_CHARACTER: ("0" | "." | "#")
+CONSTANT_BASE_STATEMENT_CHARACTER: ("0" | ".")
 
 IDENTIFIER: CNAME
 
