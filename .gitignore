@@ -1,2 +1,5 @@
 .vscode/*
 poetry.lock
+__pycache__/*
+prettybird/__pycache__/*
+**.pyc

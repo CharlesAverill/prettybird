@@ -1,25 +1,27 @@
-from lark import Transformer
+from lark.visitors import Interpreter
 
-class PrettyBirdTransformer(Transformer):
+class PrettyBirdInterpreter(Interpreter):
     def __init__(self):
+        """Initialize the Interpreter
+        """
         self.characters_dict = {}
         self.current_character = None
     
-    def character(self, ident):
-        print(ident)
-        if(self.characters_dict[ident]):
-            raise NameError(f"Identifier \"{ident}\" already exists")
+    def character_declaration(self, ident):
+        """Process character declaration
+
+        Args:
+            ident (lark.tree.Tree): Tree containing information regarding character declaration
+
+        Raises:
+            NameError: If the character has already been defined
+        """
+        identifier_token = ident.children[0]
+        identifier_name = identifier_token.value
+
+        if(identifier_name in self.characters_dict):
+            raise NameError(f"Identifier \"{identifier_name}\" already exists")
         
-        self.characters_dict[ident] = ""
+        self.characters_dict[identifier_name] = ""
 
-def compile_token(token):
-    print(token.type)
-
-def compile_tree(node):
-    print(node.data)
-    for child in node.children:
-        compile_token(child)
-
-def compile(AST):
-    for node in AST.children:
-        compile_tree(node)
+        print(f"Declared character {identifier_name}")

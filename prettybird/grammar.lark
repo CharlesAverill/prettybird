@@ -1,6 +1,6 @@
 ?start: character+
     
-character: "char" IDENTIFIER "{" character_statements "}"
+character: "char" IDENTIFIER "{" character_statements "}" -> character_declaration
 
 character_statements: character_statement
                     | character_statement character_statements

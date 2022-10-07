@@ -1,1 +1,1 @@
-from .compile import compile, PrettyBirdTransformer
+from .compile import PrettyBirdInterpreter
