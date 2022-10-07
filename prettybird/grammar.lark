@@ -21,16 +21,15 @@ constant_base_statement: CONSTANT_BASE_STATEMENT_CHARACTER+ "," constant_base_st
 from_character_base_statement: "from_char" "(" IDENTIFIER ")"
 
 steps_statements: "{" "}"
-                | "{" steps_statement+ "}"
+                 | "{" step_statement+ "}"
 
-steps_statement: UPDATE_MODE step
-               | UPDATE_MODE "filled" step
+step_statement: UPDATE_MODE FILLED? step
 
 step: vector_step
-    | circle_step
-    | ellipse_step
-    | square_step
-    | rectangle_step
+     | circle_step
+     | ellipse_step
+     | square_step
+     | rectangle_step
 
 // Line from first point to second point
 vector_step: "vector" "(" point "," point ")"
@@ -51,18 +50,20 @@ point: "(" INT "," INT ")"
 
 UPDATE_MODE: ("draw" | "erase")
 
+FILLED: "filled"
+
 CONSTANT_BASE_STATEMENT_CHARACTER: ("0" | ".")
 
 IDENTIFIER: CNAME
 
 SINGLE_LINE_COMMENT: "//" /[^\n]*/ "\n"
-MULTI_LINE_COMMENT: "/*" /(.|\n)+/ "*/"
 
 WHITESPACE: /\s+/
 
 %ignore SINGLE_LINE_COMMENT
-%ignore MULTI_LINE_COMMENT
 %ignore WHITESPACE
+%ignore C_COMMENT
 
 %import common.CNAME
 %import common.INT
+%import common.C_COMMENT

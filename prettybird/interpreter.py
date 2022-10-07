@@ -17,7 +17,7 @@ class PrettyBirdInterpreter(Interpreter):
         """Initialize values for character declaration statements
         """
         self.current_symbol = None
-    
+
     def get_symbol(self, identifier, raise_error=True):
         """Gets a symbol from self.symbols_dict and does error checking
 
@@ -51,6 +51,7 @@ class PrettyBirdInterpreter(Interpreter):
 
         identifier_token = declaration_tree.children[0]
         identifier_name = identifier_token.value
+        print("Declare", identifier_name)
 
         # Check if character has already been defined
         if (identifier_name in self.symbols_dict):
@@ -91,20 +92,57 @@ class PrettyBirdInterpreter(Interpreter):
         Raises:
             TypeError: If the parse tree contains an object that is neither a Token nor a Tree
         """
-        for constant_base_statement_character in constant_tree.children:
-            if type(constant_base_statement_character) == Token:
-                self.current_symbol.append_to_grid(constant_base_statement_character.value)
-            elif type(constant_base_statement_character) == Tree:
+        for child in constant_tree.children:
+            if type(child) == Token:
+                self.current_symbol.append_to_grid(child.value)
+            elif type(child) == Tree:
                 self.current_symbol.append_to_grid("\n")
-                self.constant_base_statement(constant_base_statement_character)
+                self.constant_base_statement(child)
             else:
-                raise TypeError(f"Unexpected type {type(constant_base_statement_character)} in constant_base_statement")
-    
+                raise TypeError(
+                    f"Unexpected type {type(child)} in constant_base_statement")
+
     def from_character_base_statement(self, character_base_tree):
         """Set a character's base to another character's computed value
 
         Args:
-            character_base_tree (_type_): _description_
+            character_base_tree (lark.tree.Tree): Tree containing identifier information
         """
         from_identifier = character_base_tree.children[0].value
         self.current_symbol.grid = self.get_symbol(from_identifier).grid
+
+    def steps_statements(self, statements_tree):
+        """Parse a set of steps statements
+
+        Args:
+            statements_tree (lark.tree.Tree): Tree containing step statement informations
+        """
+        self.visit_children(statements_tree)
+
+    def step_statement(self, statement_tree):
+        update_mode = None
+        fill_mode = None
+        for child in statement_tree.children:
+            if type(child) == Token:
+                if update_mode is None:
+                    # Either "draw" or "erase"
+                    update_mode = child.value
+                elif fill_mode is None:
+                    # Either "filled" or nothing
+                    fill_mode = child.value
+            elif type(child) == Tree:
+                self.current_symbol.prepare_instruction(
+                    update_mode, fill_mode is not None)
+                self.visit(child)
+            else:
+                raise TypeError(
+                    f"Unexpected type {type(child)} in step_statement")
+
+    def _get_point(self, point_tree):
+        return (int(point_tree.children[0]), int(point_tree.children[1]))
+
+    def vector_step(self, vector_tree):
+        first_point = self._get_point(vector_tree.children[0])
+        second_point = self._get_point(vector_tree.children[1])
+        self.current_symbol.add_instruction(
+            "vector", [first_point, second_point])

@@ -36,6 +36,7 @@ def main():
         interpreter.visit(parse_tree)
 
     for symbol in interpreter.symbols_dict.values():
+        symbol.compile()
         print(symbol)
 
 

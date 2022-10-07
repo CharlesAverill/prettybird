@@ -1,2 +1,2 @@
-from .compile import PrettyBirdInterpreter
+from .interpreter import PrettyBirdInterpreter
 from .symbol import Symbol
