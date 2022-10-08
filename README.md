@@ -18,6 +18,15 @@ For installing outside of the conda environment:
 pip install .
 ```
 
+For installing with Docker:
+
+```bash
+docker build . -t prettybird
+docker run -it prettybird /bin/bash
+```
+
+If you're using Visual Studio Code, you can use the option `Dev Containers: Open Folder in Container...` to work on this project.
+
 ## Execution
 
 ```bash
