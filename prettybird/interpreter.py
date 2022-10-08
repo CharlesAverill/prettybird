@@ -146,3 +146,9 @@ class PrettyBirdInterpreter(Interpreter):
         second_point = self._get_point(vector_tree.children[1])
         self.current_symbol.add_instruction(
             "vector", [first_point, second_point])
+    
+    def circle_step(self, vector_tree):
+        print(vector_tree)
+        center = self._get_point(vector_tree.children[0])
+        radius = int(vector_tree.children[1])
+        self.current_symbol.add_instruction("circle", [center, radius])

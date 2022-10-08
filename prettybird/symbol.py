@@ -17,9 +17,7 @@ class Symbol:
         self._instruction_buffer = ()
         self._instructions = []
 
-        self._instructions_map = {
-            "vector": self.vector
-        }
+        self._instructions_map = {"vector": self.vector, "circle": self.circle}
 
     @property
     def identifier(self):
@@ -42,7 +40,8 @@ class Symbol:
         """
         if not self._parsed_base:
             raise RuntimeWarning(
-                f"Symbol \"{self._identifier}\" does not have an initialized base yet")
+                f'Symbol "{self._identifier}" does not have an initialized base yet'
+            )
 
         return (self._width, self._height)
 
@@ -75,8 +74,8 @@ class Symbol:
         if new_char == "\n":
             self._height += 1
             self._width = len(self._grid.splitlines()[0])
-        
-    def point_within_grid(self, point):
+
+    def _point_within_grid(self, point):
         """Determine whether or not a point lies within the grid
 
         Args:
@@ -85,9 +84,14 @@ class Symbol:
         Returns:
             bool: True if the point is within the grid, otherwise False
         """
-        return point[0] >= 0 and point[1] >= 0 and point[0] < self._width and point[1] < self._height
-    
-    def replace_in_grid(self, new_character, point):
+        return (
+            point[0] >= 0
+            and point[1] >= 0
+            and point[0] < self._width
+            and point[1] < self._height
+        )
+
+    def _replace_in_grid(self, new_character, point):
         """Replace a character in the grid
 
         Args:
@@ -98,11 +102,20 @@ class Symbol:
             ValueError: If the replacement character has a length longer than 1, or if the point is not within the grid
         """
         if len(new_character) != 1:
-            raise ValueError("Tried to replace a character in the grid, but the new character has length > 1")
-        if not self.point_within_grid(point):
-            raise ValueError("Tried to replace a character in the grid, but the point is out of range:", point)
+            raise ValueError(
+                "Tried to replace a character in the grid, but the new character has length > 1"
+            )
+        if not self._point_within_grid(point):
+            raise ValueError(
+                "Tried to replace a character in the grid, but the point is out of range:",
+                point,
+            )
         converted_index = (self._width + 1) * point[1] + point[0]
-        self._grid = self._grid[:converted_index] + new_character + self._grid[converted_index + 1:]
+        self._grid = (
+            self._grid[:converted_index]
+            + new_character
+            + self._grid[converted_index + 1 :]
+        )
 
     @property
     def parsed_base(self):
@@ -125,7 +138,8 @@ class Symbol:
         """
         if self._instruction_buffer != ():
             raise ValueError(
-                f"Symbol \"{self.identifier}\" was told to prepare an instruction, but it has not finished parsing the current function!")
+                f'Symbol "{self.identifier}" was told to prepare an instruction, but it has not finished parsing the current function!'
+            )
         self._instruction_buffer = (draw_mode, fill_mode)
 
     def add_instruction(self, instruction_name, inputs):
@@ -135,10 +149,9 @@ class Symbol:
             instruction_name (str): Name of instruction type
             inputs (list): List of input data to instruction
         """
-        self._instructions.append(
-            (instruction_name, *self._instruction_buffer, inputs))
+        self._instructions.append((instruction_name, *self._instruction_buffer, inputs))
         self._instruction_buffer = ()
-    
+
     def get_draw_char(self, draw_mode):
         """Get the character to draw given a draw mode
 
@@ -151,14 +164,14 @@ class Symbol:
         if draw_mode == "draw":
             return "0"
         return "."
-    
+
     def compile(self):
         for instruction in self._instructions:
             instruction_name, draw_mode, fill_mode, inputs = instruction
             if instruction_name not in self._instructions_map:
-                raise NameError(f"Received bad instruction \"{instruction_name}\"")
+                raise NameError(f'Received bad instruction "{instruction_name}"')
             self._instructions_map[instruction_name](draw_mode, fill_mode, inputs)
-            
+
     def vector(self, draw_mode, fill_mode, inputs):
         """Draw a vector onto the grid using Bresenham's Line Generation algorithm
 
@@ -183,19 +196,55 @@ class Symbol:
         else:
             dx, dy = dy, dx
             xx, xy, yx, yy = 0, y_sign, x_sign, 0
-        
-        integer_difference = 2 * dy - dx
+
+        decision_parameter = 2 * dy - dx
         y = 0
 
         for x in range(dx + 1):
             point = (x1 + x * xx + y * yx, y1 + x * xy + y * yy)
-            if(self.point_within_grid(point)):
-                self.replace_in_grid(draw_char, point)
-            if integer_difference >= 0:
+            if self._point_within_grid(point):
+                self._replace_in_grid(draw_char, point)
+            if decision_parameter >= 0:
                 y += 1
-                integer_difference -= 2 * dx
-            integer_difference += 2 * dy
+                decision_parameter -= 2 * dx
+            decision_parameter += 2 * dy
 
+    def _plot_circle_points(self, center, deltas, draw_char):
+        cx, cy = center
+        dx, dy = deltas
+
+        for point in [
+            (cx + dx, cy + dy),
+            (cx + dx, cy - dy),
+            (cx + dy, cy + dx),
+            (cx + dy, cy - dx),
+            (cx - dx, cy + dy),
+            (cx - dx, cy - dy),
+            (cx - dy, cy + dx),
+            (cx - dy, cy - dx),
+        ]:
+            if self._point_within_grid(point):
+                self._replace_in_grid(draw_char, point)
+
+    def circle(self, draw_mode, fill_mode, inputs):
+        draw_char = self.get_draw_char(draw_mode)
+        center, radius = inputs[0], inputs[1]
+
+        dx, dy = 0, radius
+        decision_parameter = 3 - 2 * radius
+
+        self._plot_circle_points(center, (dx, dy), draw_char)
+        while dy >= dx:
+            dx += 1
+
+            if decision_parameter > 0:
+                dy -= 1
+                decision_parameter = decision_parameter + 4 * (dx - dy) + 10
+            else:
+                decision_parameter = decision_parameter + 4 * dx + 6
+            
+
+            self._plot_circle_points(center, (dx, dy), draw_char)
 
     def __repr__(self):
         """Get string representation of object
@@ -203,12 +252,22 @@ class Symbol:
         Returns:
             _type_: _description_
         """
-        out = ("~" * self._width)
+        out = "~" * self._width
         if self._grid:
             out += f"\n{self._identifier}\nGrid:\n{self._grid}\n"
         if self._instructions:
             out += "Steps:\n"
         for instruction in self._instructions:
-            out += " ".join([str(instr_subset) if type(instr_subset) != bool else "filled=" + str(instr_subset) for instr_subset in instruction]) + "\n"
-        out += ("~" * self._width)
+            out += (
+                " ".join(
+                    [
+                        str(instr_subset)
+                        if type(instr_subset) != bool
+                        else "filled=" + str(instr_subset)
+                        for instr_subset in instruction
+                    ]
+                )
+                + "\n"
+            )
+        out += "~" * self._width
         return out
