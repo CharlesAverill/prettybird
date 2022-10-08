@@ -12,6 +12,12 @@ conda install poetry
 poetry install
 ```
 
+For installing outside of the conda environment:
+
+```bash
+pip install .
+```
+
 ## Execution
 
 ```bash
