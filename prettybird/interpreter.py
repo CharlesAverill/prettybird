@@ -8,14 +8,12 @@ from .utils.string_utils import get_empty_grid
 
 class PrettyBirdInterpreter(Interpreter):
     def __init__(self):
-        """Initialize the Interpreter
-        """
+        """Initialize the Interpreter"""
         self.symbols_dict = {}
         self.current_symbol = None
 
     def setup_character_declaration(self):
-        """Initialize values for character declaration statements
-        """
+        """Initialize values for character declaration statements"""
         self.current_symbol = None
 
     def get_symbol(self, identifier, raise_error=True):
@@ -33,7 +31,7 @@ class PrettyBirdInterpreter(Interpreter):
         """
         if identifier not in self.symbols_dict:
             if raise_error:
-                raise KeyError(f"Symbol \"{identifier}\" not defined")
+                raise KeyError(f'Symbol "{identifier}" not defined')
             else:
                 return None
         return self.symbols_dict[identifier]
@@ -54,8 +52,8 @@ class PrettyBirdInterpreter(Interpreter):
         print("Declare", identifier_name)
 
         # Check if character has already been defined
-        if (identifier_name in self.symbols_dict):
-            raise NameError(f"Identifier \"{identifier_name}\" already exists")
+        if identifier_name in self.symbols_dict:
+            raise NameError(f'Identifier "{identifier_name}" already exists')
 
         self.symbols_dict[identifier_name] = Symbol(identifier_name)
 
@@ -75,19 +73,22 @@ class PrettyBirdInterpreter(Interpreter):
         # Check if character's base has already been defined
         if self.current_symbol.parsed_base:
             raise SyntaxError(
-                f"Character \"{self.current_symbol}\" already defined a base")
+                f'Character "{self.current_symbol}" already defined a base'
+            )
 
         width_token = blank_tree.children[0]
         height_token = blank_tree.children[1]
 
         self.current_symbol.grid = get_empty_grid(
-            int(width_token.value), int(height_token.value))
+            int(width_token.value), int(height_token.value)
+        )
 
-    def constant_base_statement(self, constant_tree):
+    def constant_base_statement(self, constant_tree, root_call=True):
         """Set a character's base to a pre-set value
 
         Args:
             constant_tree (lark.tree.Tree): Tree containing the pre-set grid information
+            root_call (bool): Whether or not this is the root call to this function (used to determine when the tree is not being read anymore)
 
         Raises:
             TypeError: If the parse tree contains an object that is neither a Token nor a Tree
@@ -97,10 +98,13 @@ class PrettyBirdInterpreter(Interpreter):
                 self.current_symbol.append_to_grid(child.value)
             elif type(child) == Tree:
                 self.current_symbol.append_to_grid("\n")
-                self.constant_base_statement(child)
+                self.constant_base_statement(child, False)
             else:
                 raise TypeError(
-                    f"Unexpected type {type(child)} in constant_base_statement")
+                    f"Unexpected type {type(child)} in constant_base_statement"
+                )
+        if root_call:
+            self.current_symbol.finish_grid()
 
     def from_character_base_statement(self, character_base_tree):
         """Set a character's base to another character's computed value
@@ -109,7 +113,8 @@ class PrettyBirdInterpreter(Interpreter):
             character_base_tree (lark.tree.Tree): Tree containing identifier information
         """
         from_identifier = character_base_tree.children[0].value
-        self.current_symbol.grid = self.get_symbol(from_identifier).grid
+        self.current_symbol.prepare_instruction("draw", False)
+        self.current_symbol.add_instruction("from_char", [self.get_symbol(from_identifier)])
 
     def steps_statements(self, statements_tree):
         """Parse a set of steps statements
@@ -132,11 +137,11 @@ class PrettyBirdInterpreter(Interpreter):
                     fill_mode = child.value
             elif type(child) == Tree:
                 self.current_symbol.prepare_instruction(
-                    update_mode, fill_mode is not None)
+                    update_mode, fill_mode is not None
+                )
                 self.visit(child)
             else:
-                raise TypeError(
-                    f"Unexpected type {type(child)} in step_statement")
+                raise TypeError(f"Unexpected type {type(child)} in step_statement")
 
     def _get_point(self, point_tree):
         return (int(point_tree.children[0]), int(point_tree.children[1]))
@@ -144,5 +149,9 @@ class PrettyBirdInterpreter(Interpreter):
     def vector_step(self, vector_tree):
         first_point = self._get_point(vector_tree.children[0])
         second_point = self._get_point(vector_tree.children[1])
-        self.current_symbol.add_instruction(
-            "vector", [first_point, second_point])
+        self.current_symbol.add_instruction("vector", [first_point, second_point])
+
+    def circle_step(self, vector_tree):
+        center = self._get_point(vector_tree.children[0])
+        radius = int(vector_tree.children[1])
+        self.current_symbol.add_instruction("circle", [center, radius])
