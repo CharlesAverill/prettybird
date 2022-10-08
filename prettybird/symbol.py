@@ -1,3 +1,5 @@
+import math
+
 from lib2to3.pytree import convert
 from multiprocessing.sharedctypes import Value
 
@@ -17,7 +19,7 @@ class Symbol:
         self._instruction_buffer = ()
         self._instructions = []
 
-        self._instructions_map = {"vector": self.vector, "circle": self.circle}
+        self._instructions_map = {"vector": self.vector, "circle": self.circle, "from_char": self._init_grid_from_symbol}
 
     @property
     def identifier(self):
@@ -69,11 +71,28 @@ class Symbol:
 
     grid = property(get_grid, set_grid)
 
+    def _init_grid_from_symbol(self, draw_mode, fill_mode, inputs):
+        self.set_grid(inputs[0].get_grid())
+
     def append_to_grid(self, new_char):
+        """Append a character to the grid
+
+        Args:
+            new_char (str): Character to append
+
+        Raises:
+            RuntimeError: If the base has already been completed
+        """
+        if self._parsed_base:
+            raise RuntimeError("Tried to update base, but base has already been defined")
         self._grid += new_char
         if new_char == "\n":
             self._height += 1
             self._width = len(self._grid.splitlines()[0])
+    
+    def finish_grid(self):
+        self._height += 1
+        self._parsed_base = True
 
     def _point_within_grid(self, point):
         """Determine whether or not a point lies within the grid
@@ -166,6 +185,11 @@ class Symbol:
         return "."
 
     def compile(self):
+        """Apply all instructions to grid
+
+        Raises:
+            NameError: If an instruction was not recognized
+        """
         for instruction in self._instructions:
             instruction_name, draw_mode, fill_mode, inputs = instruction
             if instruction_name not in self._instructions_map:
@@ -210,23 +234,37 @@ class Symbol:
             decision_parameter += 2 * dy
 
     def _plot_circle_points(self, center, deltas, draw_char):
+        """A part of Bresenham's Circle Generation algorithm
+
+        Args:
+            center (tuple[int, int]): Center of circle
+            deltas (tuple[int, int]): Offsets to determine where to draw circle edge points
+            draw_char (str): Character to replace on grid
+        """
         cx, cy = center
         dx, dy = deltas
 
         for point in [
             (cx + dx, cy + dy),
+            (cx - dx, cx + dy),
             (cx + dx, cy - dy),
-            (cx + dy, cy + dx),
-            (cx + dy, cy - dx),
-            (cx - dx, cy + dy),
             (cx - dx, cy - dy),
+            (cx + dy, cy + dx),
             (cx - dy, cy + dx),
-            (cx - dy, cy - dx),
+            (cx + dy, cy - dx),
+            (cx - dy, cy - dx)
         ]:
             if self._point_within_grid(point):
                 self._replace_in_grid(draw_char, point)
 
     def circle(self, draw_mode, fill_mode, inputs):
+        """Draw a vector onto the grid using Bresenham's Circle Generation algorithm
+
+        Args:
+            draw_mode (str): One of ["draw", "erase"] describing the behavior of the instruction
+            fill_mode (bool): True if the instruction will be filled, false if it will only be an outline
+            inputs (list): The circle's center point and radius
+        """
         draw_char = self.get_draw_char(draw_mode)
         center, radius = inputs[0], inputs[1]
 
@@ -234,6 +272,7 @@ class Symbol:
         decision_parameter = 3 - 2 * radius
 
         self._plot_circle_points(center, (dx, dy), draw_char)
+
         while dy >= dx:
             dx += 1
 
@@ -245,6 +284,15 @@ class Symbol:
             
 
             self._plot_circle_points(center, (dx, dy), draw_char)
+        
+        if fill_mode:
+            # https://stackoverflow.com/a/24453110/11085206
+            radius_squared = radius * radius
+            dy = -radius
+            while dy <= radius:
+                dx = (int)(math.sqrt(radius_squared - dy * dy) + 0.5)
+                self.vector(draw_mode, True, [(center[0] - dx, dy + center[1]), (center[0] + dx, dy + center[1])])
+                dy += 1
 
     def __repr__(self):
         """Get string representation of object
@@ -255,19 +303,20 @@ class Symbol:
         out = "~" * self._width
         if self._grid:
             out += f"\n{self._identifier}\nGrid:\n{self._grid}\n"
-        if self._instructions:
+        if self._instructions and self._instructions[0][0] not in ("from_char"):
             out += "Steps:\n"
-        for instruction in self._instructions:
-            out += (
-                " ".join(
-                    [
-                        str(instr_subset)
-                        if type(instr_subset) != bool
-                        else "filled=" + str(instr_subset)
-                        for instr_subset in instruction
-                    ]
+            for instruction in self._instructions:
+                out += (
+                    " ".join(
+                        [
+                            str(instr_subset)
+                            if type(instr_subset) != bool
+                            else "filled=" + str(instr_subset)
+                            for instr_subset in instruction
+                        ]
+                    )
+                    + "\n"
                 )
-                + "\n"
-            )
+        
         out += "~" * self._width
         return out
