@@ -4,15 +4,13 @@ A domain-specific language for programmatically designing fonts
 
 ## Installation
 
-```bash
-conda create -n prettybird python==3.9
-conda activate prettybird
+For installing in the poetry environment:
 
-conda install poetry
-poetry install
+```bash
+make install
 ```
 
-For installing outside of the conda environment:
+For installing outside of the pip environment:
 
 ```bash
 pip install .
@@ -28,6 +26,14 @@ docker run -it prettybird /bin/bash
 If you're using Visual Studio Code, you can use the option `Dev Containers: Open Folder in Container...` to work on this project.
 
 ## Execution
+
+With poetry:
+
+```bash
+make run input=[input_file]
+```
+
+With pip:
 
 ```bash
 prettybird [input_file]
