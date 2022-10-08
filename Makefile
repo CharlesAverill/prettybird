@@ -15,7 +15,7 @@ install:
 	poetry install
 
 lint:
-	poetry run flake8 .
+	poetry run flake8 prettybird/*.py
 	poetry run mypy .
 
 run:
