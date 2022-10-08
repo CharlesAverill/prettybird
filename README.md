@@ -25,7 +25,7 @@ docker build . -t prettybird
 docker run -it prettybird /bin/bash
 ```
 
-If you use Visual Studio Code, you can use the option `Dev Containers: Open Folder in Container...`.
+If you're using Visual Studio Code, you can use the option `Dev Containers: Open Folder in Container...` to work on this project.
 
 ## Execution
 
