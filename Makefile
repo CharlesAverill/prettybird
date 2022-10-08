@@ -15,7 +15,7 @@ install:
 	poetry install
 
 lint:
-	poetry run flake8 prettybird/*.py
+	poetry run flake8 prettybird/*.py --ignore=E501,W503
 	poetry run mypy .
 
 run:
