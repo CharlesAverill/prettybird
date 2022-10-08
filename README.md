@@ -4,7 +4,7 @@ A domain-specific language for programmatically designing fonts
 
 ## Installation
 
-For installing in the poetry environment:
+For installing in the [poetry](https://python-poetry.org/) environment:
 
 ```bash
 make install
