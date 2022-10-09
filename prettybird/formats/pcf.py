@@ -6,15 +6,17 @@ import sys
 from .pcf_defines import *
 
 
-def int_to_little_endian_32bit_int(number: int):
-    return number.to_bytes(4, "little", signed=True)
+def int_to_8bit_int(number: int, signed=True):
+    return number.to_bytes(1, sys.byteorder, signed=signed)
 
+def int_to_16bit_int(number: int, signed=True):
+    return number.to_bytes(2, sys.byteorder, signed=signed)
 
-def int_to_32bit_int(number: int):
-    return number.to_bytes(4, sys.byteorder, signed=True)
+def int_to_32bit_int(number: int, signed=True):
+    return number.to_bytes(4, sys.byteorder, signed=signed)
 
-def int_to_8bit_int(number: int):
-    return number.to_bytes(2, sys.byteorder, signed=True)
+def int_to_little_endian_32bit_int(number: int, signed=True):
+    return number.to_bytes(4, "little", signed=signed)
 
 
 class PCFProperty:
@@ -23,9 +25,18 @@ class PCFProperty:
         self.is_str_prop = _is_str_prop
         self.value_or_str_offset = _value_or_str_offset
 
+class PCFMetric:
+    def __init__(self, _left_sided_bearing: int, _right_side_bearing: int, _character_width: int, _character_ascent: int, _character_descent: int, _character_attributes: int):
+        self.left_sided_bearing = _left_sided_bearing
+        self.right_side_bearing = _right_side_bearing
+        self.character_width = _character_width
+        self.character_ascent = _character_ascent
+        self.character_descent = _character_descent
+        self.character_attributes = _character_attributes
+
 
 class PCFTable:
-    def __init__(self, _type: int, _format: int, _properties: list[PCFProperty] = []):
+    def __init__(self, _type: int, _format: int, _properties: list[PCFProperty] = [], _metrics: list[PCFMetric] = []):
         self.type = _type
         self.format = _format
         self.size = 0
@@ -34,6 +45,10 @@ class PCFTable:
         # Properties table
         self.num_properties = len(_properties)
         self.props = _properties
+
+        # Metrics table
+        self.num_metrics = len(_metrics)
+        self.mets = _metrics
 
         self.function_map = {
             PCF_PROPERTIES: self.properties,
@@ -82,7 +97,7 @@ class PCFTable:
                 "PCF_PROPERTIES should have at least one property, this one has",
                 self.num_properties,
             )
-        out += int_to_little_endian_32bit_int(self.num_properties)
+        out += int_to_32bit_int(self.num_properties)
         # properties
         properties_name_size = 0
         strings = b""
@@ -103,28 +118,67 @@ class PCFTable:
         return out
     
     def accelerators(self):
-        return b""
+        out = b""
+
+        return out
     
     def metrics(self):
-        return b""
+        out = b""
+
+        # format
+        if self.format not in (PCF_DEFAULT_FORMAT, PCF_COMPRESSED_METRICS):
+            raise UserWarning(
+                "PCF_BITMAPS should have the PCF Default Format or the PCF Compressed Metrics Format, this one has",
+                pcf_format_strings[self.format],
+            )
+        out += int_to_little_endian_32bit_int(self.format)
+
+        # metrics
+        if self.format == PCF_DEFAULT_FORMAT:
+            # Uncompressed metrics
+            out += int_to_32bit_int(self.num_metrics)
+            for metric in self.mets:
+                out += int_to_16bit_int(metric.left_sided_bearing)
+                out += int_to_16bit_int(metric.right_side_bearing)
+                out += int_to_16bit_int(metric.character_width)
+                out += int_to_16bit_int(metric.character_ascent)
+                out += int_to_16bit_int(metric.character_descent)
+                out += int_to_16bit_int(metric.character_attributes, signed=False)
+        else: 
+            # Compressed metrics
+            raise NotImplementedError("PCF_COMPRESSED_METRICS is not yet supported")
+
+        return out
 
     def bitmaps(self):
-        return b""
+        out = b""
+
+        return out
 
     def ink_metrics(self):
-        return b""
+        out = b""
+
+        return out
 
     def bdf_encodings(self):
-        return b""
+        out = b""
+
+        return out
 
     def swidths(self):
-        return b""
+        out = b""
+
+        return out
 
     def glyph_names(self):
-        return b""
+        out = b""
+
+        return out
 
     def bdf_accelerators(self):
-        return b""
+        out = b""
+
+        return out
 
 
 class PCF:
@@ -158,13 +212,15 @@ class PCF:
         # Write table of contents
         for table in self.tables:
             self.file.write(table.get_toc_entry())
-        # Write tables themselves
-        for table in self.tables:
-            self.file.write(table.get_table())
 
     def write(self):
         self.file = open(self.filename, "wb")
+        # Write header
         self.write_header()
+        # Write tables themselves
+        for table in self.tables:
+            self.file.write(table.get_table())
+        self.file.close()
 
 
 if __name__ == "__main__":
