@@ -1,8 +1,5 @@
 import math
 
-from lib2to3.pytree import convert
-from multiprocessing.sharedctypes import Value
-
 
 class Symbol:
     def __init__(self, identifier):
@@ -19,7 +16,8 @@ class Symbol:
         self._instruction_buffer = ()
         self._instructions = []
 
-        self._instructions_map = {"vector": self.vector, "circle": self.circle, "from_char": self._init_grid_from_symbol}
+        self._instructions_map = {
+            "vector": self.vector, "circle": self.circle, "from_char": self._init_grid_from_symbol}
 
     @property
     def identifier(self):
@@ -84,12 +82,13 @@ class Symbol:
             RuntimeError: If the base has already been completed
         """
         if self._parsed_base:
-            raise RuntimeError("Tried to update base, but base has already been defined")
+            raise RuntimeError(
+                "Tried to update base, but base has already been defined")
         self._grid += new_char
         if new_char == "\n":
             self._height += 1
             self._width = len(self._grid.splitlines()[0])
-    
+
     def finish_grid(self):
         self._height += 1
         self._parsed_base = True
@@ -133,7 +132,7 @@ class Symbol:
         self._grid = (
             self._grid[:converted_index]
             + new_character
-            + self._grid[converted_index + 1 :]
+            + self._grid[converted_index + 1:]
         )
 
     @property
@@ -168,7 +167,8 @@ class Symbol:
             instruction_name (str): Name of instruction type
             inputs (list): List of input data to instruction
         """
-        self._instructions.append((instruction_name, *self._instruction_buffer, inputs))
+        self._instructions.append(
+            (instruction_name, *self._instruction_buffer, inputs))
         self._instruction_buffer = ()
 
     def get_draw_char(self, draw_mode):
@@ -193,8 +193,10 @@ class Symbol:
         for instruction in self._instructions:
             instruction_name, draw_mode, fill_mode, inputs = instruction
             if instruction_name not in self._instructions_map:
-                raise NameError(f'Received bad instruction "{instruction_name}"')
-            self._instructions_map[instruction_name](draw_mode, fill_mode, inputs)
+                raise NameError(
+                    f'Received bad instruction "{instruction_name}"')
+            self._instructions_map[instruction_name](
+                draw_mode, fill_mode, inputs)
 
     def vector(self, draw_mode, fill_mode, inputs):
         """Draw a vector onto the grid using Bresenham's Line Generation algorithm
@@ -281,17 +283,17 @@ class Symbol:
                 decision_parameter = decision_parameter + 4 * (dx - dy) + 10
             else:
                 decision_parameter = decision_parameter + 4 * dx + 6
-            
 
             self._plot_circle_points(center, (dx, dy), draw_char)
-        
+
         if fill_mode:
             # https://stackoverflow.com/a/24453110/11085206
             radius_squared = radius * radius
             dy = -radius
             while dy <= radius:
                 dx = (int)(math.sqrt(radius_squared - dy * dy) + 0.5)
-                self.vector(draw_mode, True, [(center[0] - dx, dy + center[1]), (center[0] + dx, dy + center[1])])
+                self.vector(draw_mode, True, [
+                            (center[0] - dx, dy + center[1]), (center[0] + dx, dy + center[1])])
                 dy += 1
 
     def __repr__(self):
@@ -317,6 +319,6 @@ class Symbol:
                     )
                     + "\n"
                 )
-        
+
         out += "~" * self._width
         return out

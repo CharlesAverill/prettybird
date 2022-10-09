@@ -1,0 +1,3 @@
+[submodule "lib/bdf2ttf"]
+	path = lib/bdf2ttf
+	url = https://github.com/CharlesAverill/bdf2ttf.git
