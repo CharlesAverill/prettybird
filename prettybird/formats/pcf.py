@@ -9,11 +9,14 @@ from .pcf_defines import *
 def int_to_8bit_int(number: int, signed=True):
     return number.to_bytes(1, sys.byteorder, signed=signed)
 
+
 def int_to_16bit_int(number: int, signed=True):
     return number.to_bytes(2, sys.byteorder, signed=signed)
 
+
 def int_to_32bit_int(number: int, signed=True):
     return number.to_bytes(4, sys.byteorder, signed=signed)
+
 
 def int_to_little_endian_32bit_int(number: int, signed=True):
     return number.to_bytes(4, "little", signed=signed)
@@ -25,8 +28,17 @@ class PCFProperty:
         self.is_str_prop = _is_str_prop
         self.value_or_str_offset = _value_or_str_offset
 
+
 class PCFMetric:
-    def __init__(self, _left_sided_bearing: int, _right_side_bearing: int, _character_width: int, _character_ascent: int, _character_descent: int, _character_attributes: int):
+    def __init__(
+        self,
+        _left_sided_bearing: int,
+        _right_side_bearing: int,
+        _character_width: int,
+        _character_ascent: int,
+        _character_descent: int,
+        _character_attributes: int,
+    ):
         self.left_sided_bearing = _left_sided_bearing
         self.right_side_bearing = _right_side_bearing
         self.character_width = _character_width
@@ -35,8 +47,29 @@ class PCFMetric:
         self.character_attributes = _character_attributes
 
 
+class PCFBitmap:
+    def __init__(
+        self,
+        _sizes: list[int, int, int, int],
+        _bitmap: str
+    ):
+        if(len(_sizes) < 4):
+            _sizes.extend([0] * (4 - len(_sizes)))
+        self.sizes = _sizes
+        # TODO : Convert _bitmap (str) into an actual array of bits
+        self.bitmap = _bitmap
+
+
+
 class PCFTable:
-    def __init__(self, _type: int, _format: int, _properties: list[PCFProperty] = [], _metrics: list[PCFMetric] = []):
+    def __init__(
+        self,
+        _type: int,
+        _format: int,
+        _properties: list[PCFProperty] = [],
+        _metrics: list[PCFMetric] = [],
+        _bitmaps: list[PCFBitmap] = []
+    ):
         self.type = _type
         self.format = _format
         self.size = 0
@@ -116,12 +149,12 @@ class PCFTable:
         out += strings
 
         return out
-    
+
     def accelerators(self):
         out = b""
 
         return out
-    
+
     def metrics(self):
         out = b""
 
@@ -144,7 +177,7 @@ class PCFTable:
                 out += int_to_16bit_int(metric.character_ascent)
                 out += int_to_16bit_int(metric.character_descent)
                 out += int_to_16bit_int(metric.character_attributes, signed=False)
-        else: 
+        else:
             # Compressed metrics
             raise NotImplementedError("PCF_COMPRESSED_METRICS is not yet supported")
 
@@ -152,6 +185,13 @@ class PCFTable:
 
     def bitmaps(self):
         out = b""
+
+        # format
+        if self.format != PCF_DEFAULT_FORMAT:
+            raise RuntimeError("PCF_BITMAPS must have format PCF_DEFAULT_FORMAT")
+        out += int_to_little_endian_32bit_int(self.format)
+
+        # num_bitmaps
 
         return out
 
@@ -225,13 +265,19 @@ class PCF:
 
 if __name__ == "__main__":
     tables = [
-        PCFTable(PCF_PROPERTIES, PCF_DEFAULT_FORMAT, _properties=[
-            PCFProperty("DEFAULT_CHAR", False, 0),
-            PCFProperty("FONT_ASCENT", False, 16),
-            PCFProperty("FONT_DESCENT", False, 2)
-        ]),
+        PCFTable(
+            PCF_PROPERTIES,
+            PCF_DEFAULT_FORMAT,
+            _properties=[
+                PCFProperty("DEFAULT_CHAR", False, 0),
+                PCFProperty("FONT_ASCENT", False, 16),
+                PCFProperty("FONT_DESCENT", False, 2),
+            ],
+        ),
         PCFTable(PCF_ACCELERATORS, PCF_DEFAULT_FORMAT),
-        PCFTable(PCF_METRICS, PCF_DEFAULT_FORMAT),
+        PCFTable(
+            PCF_METRICS, PCF_DEFAULT_FORMAT, _metrics=[PCFMetric(0, 0, 6, -1, 0, 0)]
+        ),
         PCFTable(PCF_BITMAPS, PCF_DEFAULT_FORMAT),
         PCFTable(PCF_BDF_ENCODINGS, PCF_DEFAULT_FORMAT),
     ]
