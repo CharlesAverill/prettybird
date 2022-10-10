@@ -31,12 +31,12 @@ class PrettyBirdInterpreter(Interpreter):
         """
         if identifier not in self.symbols_dict:
             if raise_error:
-                raise KeyError(f'Symbol "{identifier}" not defined')
+                raise NameError(f'Symbol "{identifier}" not defined')
             else:
                 return None
         return self.symbols_dict[identifier]
 
-    def character_declaration(self, declaration_tree):
+    def character(self, declaration_tree):
         """Process character declaration
 
         Args:
@@ -49,13 +49,18 @@ class PrettyBirdInterpreter(Interpreter):
 
         identifier_token = declaration_tree.children[0]
         identifier_name = identifier_token.value
-        print("Declare", identifier_name)
+
+        encoding_value = None
+        if type(declaration_tree.children[1]) == Token and declaration_tree.children[1].type == "INT":
+            encoding_value = declaration_tree.children[1]
+        if encoding_value is None:
+            encoding_value = ord(identifier_name)
 
         # Check if character has already been defined
         if identifier_name in self.symbols_dict:
             raise NameError(f'Identifier "{identifier_name}" already exists')
 
-        self.symbols_dict[identifier_name] = Symbol(identifier_name)
+        self.symbols_dict[identifier_name] = Symbol(identifier_name, encoding_value)
 
         self.current_symbol = self.symbols_dict[identifier_name]
 
@@ -128,6 +133,8 @@ class PrettyBirdInterpreter(Interpreter):
     def step_statement(self, statement_tree):
         update_mode = None
         fill_mode = None
+        # half_mode = None
+        # print(statement_tree.children)
         for child in statement_tree.children:
             if type(child) == Token:
                 if update_mode is None:
@@ -147,6 +154,9 @@ class PrettyBirdInterpreter(Interpreter):
 
     def _get_point(self, point_tree):
         return (int(point_tree.children[0]), int(point_tree.children[1]))
+    
+    def point_step(self, point_tree):
+        self.current_symbol.add_instruction("point", [self._get_point(point_tree.children[0])])
 
     def vector_step(self, vector_tree):
         first_point = self._get_point(vector_tree.children[0])

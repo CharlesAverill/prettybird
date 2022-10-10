@@ -2,13 +2,14 @@ import math
 
 
 class Symbol:
-    def __init__(self, identifier):
+    def __init__(self, identifier, encoding):
         """Initiailze new Symbol
 
         Args:
             identifier (str): Name of Symbol
         """
         self._identifier = identifier
+        self._encoding = encoding
         self._parsed_base = False
         self._width = 0
         self._height = 0
@@ -17,7 +18,7 @@ class Symbol:
         self._instructions = []
 
         self._instructions_map = {
-            "vector": self.vector, "circle": self.circle, "from_char": self._init_grid_from_symbol}
+            "point": self.point, "vector": self.vector, "circle": self.circle, "from_char": self._init_grid_from_symbol}
 
     @property
     def identifier(self):
@@ -27,6 +28,23 @@ class Symbol:
             str: Name of Symbol
         """
         return self._identifier
+
+    @property
+    def encoding(self):
+        """Get the encoding of the Symbol
+        
+        Returns:
+            int: Encoding of Symbol
+        """
+        return self._encoding
+
+    @property
+    def width(self):
+        return self._width
+    
+    @property
+    def height(self):
+        return self._height
 
     @property
     def dimensions(self):
@@ -197,6 +215,11 @@ class Symbol:
                     f'Received bad instruction "{instruction_name}"')
             self._instructions_map[instruction_name](
                 draw_mode, fill_mode, inputs)
+    
+    def point(self, draw_mode, fill_mode, inputs):
+        draw_char = self.get_draw_char(draw_mode)
+        if self._point_within_grid(inputs[0]):
+            self._replace_in_grid(draw_char, inputs[0])
 
     def vector(self, draw_mode, fill_mode, inputs):
         """Draw a vector onto the grid using Bresenham's Line Generation algorithm
@@ -295,6 +318,18 @@ class Symbol:
                 self.vector(draw_mode, True, [
                             (center[0] - dx, dy + center[1]), (center[0] + dx, dy + center[1])])
                 dy += 1
+    
+    def grid_hex_repr(self):
+        out = ""
+        bitstring = self.grid.replace("0", "1").replace(".", "0")
+        for line in bitstring.split("\n"):
+            bits_by_8 = [int(line[i:i + 8], 2) for i in range(0, len(line), 8)]
+            outline = ""
+            for bitline in bits_by_8:
+                outline += f"{bitline:02x}".upper()
+            outline = outline.ljust(int(self.width / 4), "0")
+            out += outline + "\n"
+        return out 
 
     def __repr__(self):
         """Get string representation of object
@@ -304,7 +339,7 @@ class Symbol:
         """
         out = "~" * self._width
         if self._grid:
-            out += f"\n{self._identifier}\nGrid:\n{self._grid}\n"
+            out += f"\n{self._identifier} ({self._encoding})\nGrid:\n{self._grid}\n"
         if self._instructions and self._instructions[0][0] not in ("from_char"):
             out += "Steps:\n"
             for instruction in self._instructions:
