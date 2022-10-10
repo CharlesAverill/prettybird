@@ -3,3 +3,7 @@ poetry.lock
 __pycache__/*
 prettybird/__pycache__/*
 **.pyc
+**.ttf
+**.bdf
+**.pcf
+lib/bdf2ttf/**

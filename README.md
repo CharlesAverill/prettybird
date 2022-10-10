@@ -4,6 +4,12 @@ A domain-specific language for programmatically designing fonts
 
 ## Installation
 
+Clone the repo:
+
+```bash
+git clone --recurse-submodules https://github.com/CharlesAverill/prettybird.git
+```
+
 For installing in the [poetry](https://python-poetry.org/) environment:
 
 ```bash

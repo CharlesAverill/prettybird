@@ -1,17 +1,15 @@
 import math
 
-from lib2to3.pytree import convert
-from multiprocessing.sharedctypes import Value
-
 
 class Symbol:
-    def __init__(self, identifier):
+    def __init__(self, identifier, encoding):
         """Initiailze new Symbol
 
         Args:
             identifier (str): Name of Symbol
         """
         self._identifier = identifier
+        self._encoding = encoding
         self._parsed_base = False
         self._width = 0
         self._height = 0
@@ -19,7 +17,8 @@ class Symbol:
         self._instruction_buffer = ()
         self._instructions = []
 
-        self._instructions_map = {"vector": self.vector, "circle": self.circle, "from_char": self._init_grid_from_symbol}
+        self._instructions_map = {
+            "point": self.point, "vector": self.vector, "circle": self.circle, "from_char": self._init_grid_from_symbol}
 
     @property
     def identifier(self):
@@ -29,6 +28,23 @@ class Symbol:
             str: Name of Symbol
         """
         return self._identifier
+
+    @property
+    def encoding(self):
+        """Get the encoding of the Symbol
+        
+        Returns:
+            int: Encoding of Symbol
+        """
+        return self._encoding
+
+    @property
+    def width(self):
+        return self._width
+    
+    @property
+    def height(self):
+        return self._height
 
     @property
     def dimensions(self):
@@ -84,12 +100,13 @@ class Symbol:
             RuntimeError: If the base has already been completed
         """
         if self._parsed_base:
-            raise RuntimeError("Tried to update base, but base has already been defined")
+            raise RuntimeError(
+                "Tried to update base, but base has already been defined")
         self._grid += new_char
         if new_char == "\n":
             self._height += 1
             self._width = len(self._grid.splitlines()[0])
-    
+
     def finish_grid(self):
         self._height += 1
         self._parsed_base = True
@@ -133,7 +150,7 @@ class Symbol:
         self._grid = (
             self._grid[:converted_index]
             + new_character
-            + self._grid[converted_index + 1 :]
+            + self._grid[converted_index + 1:]
         )
 
     @property
@@ -168,7 +185,8 @@ class Symbol:
             instruction_name (str): Name of instruction type
             inputs (list): List of input data to instruction
         """
-        self._instructions.append((instruction_name, *self._instruction_buffer, inputs))
+        self._instructions.append(
+            (instruction_name, *self._instruction_buffer, inputs))
         self._instruction_buffer = ()
 
     def get_draw_char(self, draw_mode):
@@ -193,8 +211,15 @@ class Symbol:
         for instruction in self._instructions:
             instruction_name, draw_mode, fill_mode, inputs = instruction
             if instruction_name not in self._instructions_map:
-                raise NameError(f'Received bad instruction "{instruction_name}"')
-            self._instructions_map[instruction_name](draw_mode, fill_mode, inputs)
+                raise NameError(
+                    f'Received bad instruction "{instruction_name}"')
+            self._instructions_map[instruction_name](
+                draw_mode, fill_mode, inputs)
+    
+    def point(self, draw_mode, fill_mode, inputs):
+        draw_char = self.get_draw_char(draw_mode)
+        if self._point_within_grid(inputs[0]):
+            self._replace_in_grid(draw_char, inputs[0])
 
     def vector(self, draw_mode, fill_mode, inputs):
         """Draw a vector onto the grid using Bresenham's Line Generation algorithm
@@ -281,18 +306,30 @@ class Symbol:
                 decision_parameter = decision_parameter + 4 * (dx - dy) + 10
             else:
                 decision_parameter = decision_parameter + 4 * dx + 6
-            
 
             self._plot_circle_points(center, (dx, dy), draw_char)
-        
+
         if fill_mode:
             # https://stackoverflow.com/a/24453110/11085206
             radius_squared = radius * radius
             dy = -radius
             while dy <= radius:
                 dx = (int)(math.sqrt(radius_squared - dy * dy) + 0.5)
-                self.vector(draw_mode, True, [(center[0] - dx, dy + center[1]), (center[0] + dx, dy + center[1])])
+                self.vector(draw_mode, True, [
+                            (center[0] - dx, dy + center[1]), (center[0] + dx, dy + center[1])])
                 dy += 1
+    
+    def grid_hex_repr(self):
+        out = ""
+        bitstring = self.grid.replace("0", "1").replace(".", "0")
+        for line in bitstring.split("\n"):
+            bits_by_8 = [int(line[i:i + 8], 2) for i in range(0, len(line), 8)]
+            outline = ""
+            for bitline in bits_by_8:
+                outline += f"{bitline:02x}".upper()
+            outline = outline.ljust(int(self.width / 4), "0")
+            out += outline + "\n"
+        return out 
 
     def __repr__(self):
         """Get string representation of object
@@ -302,7 +339,7 @@ class Symbol:
         """
         out = "~" * self._width
         if self._grid:
-            out += f"\n{self._identifier}\nGrid:\n{self._grid}\n"
+            out += f"\n{self._identifier} ({self._encoding})\nGrid:\n{self._grid}\n"
         if self._instructions and self._instructions[0][0] not in ("from_char"):
             out += "Steps:\n"
             for instruction in self._instructions:
@@ -317,6 +354,6 @@ class Symbol:
                     )
                     + "\n"
                 )
-        
+
         out += "~" * self._width
         return out

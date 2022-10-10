@@ -4,6 +4,7 @@ description = ""
 name = "prettybird"
 readme = "README.md"
 version = "0.1.0"
+include = ["lib/bdf2ttf/bdf2ttf"]
 
 [tool.poetry.dependencies]
 lark = "^1.1.2"
