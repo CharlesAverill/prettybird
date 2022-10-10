@@ -43,7 +43,9 @@ vector_step: "vector" "(" point "," point ")"
 circle_step: "circle" "(" point "," INT ")"
 
 // Ellipse with center at point, width INT, height INT
+// or an ellipse within the rectangle defined by bottomleft=point, topright=point
 ellipse_step: "ellipse" "(" point "," INT "," INT ")"
+            | "ellipse" "(" point "," point ")"
 
 // Square with top left at point and side length INT
 square_step: "square" "(" point "," INT ")"

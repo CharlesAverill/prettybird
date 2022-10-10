@@ -80,11 +80,12 @@ char o {
 */
 char 0 {
     base {
-        blank(8, 8)
+        blank(8, 16)
     }
 
     steps {
-        draw circle ((3, 3), 3)
-        draw point((3, 3))
+        draw filled ellipse((0, 0), (7, 15))
+        erase filled ellipse((1, 1), (6, 14))
+        draw filled ellipse((3, 7), (4, 8))
     }
 }

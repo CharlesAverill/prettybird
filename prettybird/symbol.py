@@ -18,7 +18,12 @@ class Symbol:
         self._instructions = []
 
         self._instructions_map = {
-            "point": self.point, "vector": self.vector, "circle": self.circle, "from_char": self._init_grid_from_symbol}
+            "point": self.point,
+            "vector": self.vector,
+            "circle": self.circle,
+            "ellipse": self.ellipse,
+            "from_char": self._init_grid_from_symbol,
+        }
 
     @property
     def identifier(self):
@@ -32,7 +37,7 @@ class Symbol:
     @property
     def encoding(self):
         """Get the encoding of the Symbol
-        
+
         Returns:
             int: Encoding of Symbol
         """
@@ -41,7 +46,7 @@ class Symbol:
     @property
     def width(self):
         return self._width
-    
+
     @property
     def height(self):
         return self._height
@@ -101,7 +106,8 @@ class Symbol:
         """
         if self._parsed_base:
             raise RuntimeError(
-                "Tried to update base, but base has already been defined")
+                "Tried to update base, but base has already been defined"
+            )
         self._grid += new_char
         if new_char == "\n":
             self._height += 1
@@ -150,7 +156,7 @@ class Symbol:
         self._grid = (
             self._grid[:converted_index]
             + new_character
-            + self._grid[converted_index + 1:]
+            + self._grid[converted_index + 1 :]
         )
 
     @property
@@ -185,8 +191,7 @@ class Symbol:
             instruction_name (str): Name of instruction type
             inputs (list): List of input data to instruction
         """
-        self._instructions.append(
-            (instruction_name, *self._instruction_buffer, inputs))
+        self._instructions.append((instruction_name, *self._instruction_buffer, inputs))
         self._instruction_buffer = ()
 
     def get_draw_char(self, draw_mode):
@@ -211,11 +216,9 @@ class Symbol:
         for instruction in self._instructions:
             instruction_name, draw_mode, fill_mode, inputs = instruction
             if instruction_name not in self._instructions_map:
-                raise NameError(
-                    f'Received bad instruction "{instruction_name}"')
-            self._instructions_map[instruction_name](
-                draw_mode, fill_mode, inputs)
-    
+                raise NameError(f'Received bad instruction "{instruction_name}"')
+            self._instructions_map[instruction_name](draw_mode, fill_mode, inputs)
+
     def point(self, draw_mode, fill_mode, inputs):
         draw_char = self.get_draw_char(draw_mode)
         if self._point_within_grid(inputs[0]):
@@ -277,7 +280,7 @@ class Symbol:
             (cx + dy, cy + dx),
             (cx - dy, cy + dx),
             (cx + dy, cy - dx),
-            (cx - dy, cy - dx)
+            (cx - dy, cy - dx),
         ]:
             if self._point_within_grid(point):
                 self._replace_in_grid(draw_char, point)
@@ -315,21 +318,87 @@ class Symbol:
             dy = -radius
             while dy <= radius:
                 dx = (int)(math.sqrt(radius_squared - dy * dy) + 0.5)
-                self.vector(draw_mode, True, [
-                            (center[0] - dx, dy + center[1]), (center[0] + dx, dy + center[1])])
+                self.vector(
+                    draw_mode,
+                    True,
+                    [
+                        (center[0] - dx, dy + center[1]),
+                        (center[0] + dx, dy + center[1]),
+                    ],
+                )
                 dy += 1
-    
+
+    def ellipse(self, draw_mode, fill_mode, inputs):
+        draw_char = self.get_draw_char(draw_mode)
+        p0, p1 = inputs
+        x0, y0, x1, y1 = *p0, *p1
+
+        a = abs(x1 - x0)
+        b = abs(y1 - y0)
+        
+        if fill_mode:
+            h, k = x0 + a / 2, y0 + b / 2
+            for x in range(x0, x1 + 1):
+                for y in range(y0, y1 + 1):
+                    if (((x - h) ** 2) / (a * a / 4)) + (((y - k) ** 2) / (b * b / 4)) <= 1:
+                        if self._point_within_grid((x, y)):
+                            self._replace_in_grid(draw_char, (x, y))
+
+        b1 = b & 1
+        dx = 4 * (1 - a) * b * b
+        dy = 4 * (b1 + 1) * a * a
+        err = dx + dy + b1 * a * a
+        e2 = 0
+
+        if x0 > x1:
+            # if called with swapped points
+            x0 = x1
+            x1 += a
+        if y0 > y1:
+            # Exchange
+            y0 = y1
+        # Starting pixel
+        y0 += (b + 1) // 2
+        y1 = y0 - b1
+        a *= 8 * a
+        b1 = 8 * b * b
+
+        do_while = True
+        while do_while or x0 <= x1:
+            do_while = False
+            for point in [(x1, y0), (x0, y0), (x0, y1), (x1, y1)]:
+                if self._point_within_grid(point):
+                    self._replace_in_grid(draw_char, point)
+            e2 = 2 * err
+            if e2 <= dy:
+                y0 += 1
+                y1 -= 1
+                dy += a
+                err += dy
+            if e2 >= dx or 2 * err > dy:
+                x0 += 1
+                x1 -= 1
+                dx += b1
+                err += dx
+
+        while y0 - y1 < b:
+            for point in [(x0 - 1, y0), (x1 + 1, y0), (x0 - 1, y1), (x1 + 1, y1)]:
+                if self._point_within_grid(point):
+                    self._replace_in_grid(draw_char, point)
+            y0 += 1
+            y1 -= 1
+
     def grid_hex_repr(self):
         out = ""
         bitstring = self.grid.replace("0", "1").replace(".", "0")
         for line in bitstring.split("\n"):
-            bits_by_8 = [int(line[i:i + 8], 2) for i in range(0, len(line), 8)]
+            bits_by_8 = [int(line[i : i + 8], 2) for i in range(0, len(line), 8)]
             outline = ""
             for bitline in bits_by_8:
                 outline += f"{bitline:02x}".upper()
             outline = outline.ljust(int(self.width / 4), "0")
             out += outline + "\n"
-        return out 
+        return out
 
     def __repr__(self):
         """Get string representation of object

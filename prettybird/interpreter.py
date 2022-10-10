@@ -164,7 +164,20 @@ class PrettyBirdInterpreter(Interpreter):
         self.current_symbol.add_instruction(
             "vector", [first_point, second_point])
 
-    def circle_step(self, vector_tree):
-        center = self._get_point(vector_tree.children[0])
-        radius = int(vector_tree.children[1])
+    def circle_step(self, circle_tree):
+        center = self._get_point(circle_tree.children[0])
+        radius = int(circle_tree.children[1])
         self.current_symbol.add_instruction("circle", [center, radius])
+    
+    def ellipse_step(self, ellipse_tree):
+        p1, p2 = None, None
+        if type(ellipse_tree.children[1]) == Token:
+            center = self._get_point(ellipse_tree.children[0])
+            width = int(ellipse_tree.children[1])
+            height = int(ellipse_tree.children[2])
+            p1 = (center[0] - int(width / 2), center[1] - int(height / 2))
+            p2 = (center[0] + int(width / 2), center[1] + int(height / 2))
+        else:
+            p1 = self._get_point(ellipse_tree.children[0])
+            p2 = self._get_point(ellipse_tree.children[1])
+        self.current_symbol.add_instruction("ellipse", [p1, p2])
