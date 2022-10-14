@@ -294,6 +294,9 @@ class Symbol:
                 self.vector(draw_mode, True, [(center[0] - dx, dy + center[1]), (center[0] + dx, dy + center[1])])
                 dy += 1
 
+    def square(draw_mode, fill_mode, inputs)
+        pass
+
     def __repr__(self):
         """Get string representation of object
 

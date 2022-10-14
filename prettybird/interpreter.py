@@ -155,3 +155,6 @@ class PrettyBirdInterpreter(Interpreter):
         center = self._get_point(vector_tree.children[0])
         radius = int(vector_tree.children[1])
         self.current_symbol.add_instruction("circle", [center, radius])
+
+    def square_step(self, square_tree)
+        pass
