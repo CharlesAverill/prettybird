@@ -8,6 +8,19 @@ Target is
 ..0000..
 */
 
+/*
+define triangle (asdf atom1 atom2 atom3) {
+    asdf atom1((1, 1), (1, 2))
+    asdf atom2((1, 1), (1, 2))
+    asdf atom3((1, 1), (1, 2))
+}
+
+def func (center, radius) {
+    terminate if center is (0, 0)
+    draw vector(center, center + (radius, 0))
+}
+*/
+
 // the compiler will accept identifiers of length > 1, but it is undefined behavior
 
 // the optional "encoding=INT" behavior explicitly tells the compiler which character this
@@ -22,6 +35,7 @@ char a {
         draw vector((2, 5), (5, 5))
         draw vector((5, 1), (3, 3))
         draw vector((2, 3), (1, 4))
+        // func((1, 1), 3)
     }
 }
 

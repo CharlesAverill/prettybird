@@ -26,15 +26,15 @@ steps_statements: "{" "}"
 step_statement: UPDATE_MODE FILLED? HALF? step
               | UPDATE_MODE HALF? FILLED? step
 
-step: point_step
-    | vector_step
+step: vector_step
     | circle_step
     | ellipse_step
     | square_step
     | rectangle_step
+    // | point_step
 
 // Just this point
-point_step: "point" "(" point ")"
+//point_step: "point" "(" point ")"
 
 // Line from first point to second point
 vector_step: "vector" "(" point "," point ")"

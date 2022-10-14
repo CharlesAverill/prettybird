@@ -18,7 +18,7 @@ class Symbol:
         self._instructions = []
 
         self._instructions_map = {
-            "point": self.point,
+            # "point": self.point,
             "vector": self.vector,
             "circle": self.circle,
             "ellipse": self.ellipse,
@@ -219,10 +219,12 @@ class Symbol:
                 raise NameError(f'Received bad instruction "{instruction_name}"')
             self._instructions_map[instruction_name](draw_mode, fill_mode, inputs)
 
+    """
     def point(self, draw_mode, fill_mode, inputs):
         draw_char = self.get_draw_char(draw_mode)
         if self._point_within_grid(inputs[0]):
             self._replace_in_grid(draw_char, inputs[0])
+    """
 
     def vector(self, draw_mode, fill_mode, inputs):
         """Draw a vector onto the grid using Bresenham's Line Generation algorithm

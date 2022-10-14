@@ -155,8 +155,10 @@ class PrettyBirdInterpreter(Interpreter):
     def _get_point(self, point_tree):
         return (int(point_tree.children[0]), int(point_tree.children[1]))
     
+    """
     def point_step(self, point_tree):
         self.current_symbol.add_instruction("point", [self._get_point(point_tree.children[0])])
+    """
 
     def vector_step(self, vector_tree):
         first_point = self._get_point(vector_tree.children[0])
