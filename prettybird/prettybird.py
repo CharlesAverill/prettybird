@@ -5,7 +5,7 @@ import pathlib
 from lark import Lark
 
 from prettybird import PrettyBirdInterpreter
-from prettybird.formats import BDF
+from prettybird.formats import *
 
 
 def get_args():
@@ -31,9 +31,23 @@ def get_args():
         help="Name to give to the output font",
         type=str,
     )
-    parser.add_argument("--stdout", default=False, action="store_true", help="Print compiled characters' IR to stdout")
+    parser.add_argument(
+        "--stdout",
+        default=False,
+        action="store_true",
+        help="Print compiled characters' IR to stdout",
+    )
 
     return parser.parse_args()
+
+
+def get_format(format_name: str) -> Format:
+    format_name = format_name.upper()
+    if format_name == "BDF":
+        return BDF
+    elif format_name == "SVG":
+        return SVG
+    raise NotImplementedError(f"Font format {format_name} is not supported")
 
 
 def main():
@@ -69,6 +83,7 @@ def main():
         if args.stdout:
             print(symbol)
 
+    """
     font = BDF(
         filename=f"{args.font_name}.bdf",
         version="0.1",
@@ -77,12 +92,17 @@ def main():
         bounding_box=(6, 8),
         properties=[("FONT_ASCENT", 14), ("FONT_DESCENT", 2)],
     )
+    """
+    font = get_format(args.format)(args.font_name, "0.1")
     font.add_symbols(list(interpreter.symbols_dict.values()))
     font.compile()
+    print(font.filename)
 
+    """
     if args.format == "ttf":
         font.convert_to_ttf()
         os.remove(font.filename)
+    """
 
 
 if __name__ == "__main__":

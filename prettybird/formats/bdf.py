@@ -8,15 +8,13 @@ import tempfile
 from pathlib import Path
 
 from prettybird import Symbol
+from prettybird.formats import Format
 
-class BDF:
-    def __init__(self, filename: str, version: str, font_name: str, point_size: int, bounding_box: tuple[int, int], properties: list[tuple]):
-        if not filename.lower().endswith(".bdf"):
-            raise UserWarning("BDF files should end with \".bdf\"")
-        self.filename = filename
+class BDF(Format):
+    def __init__(self, font_name: str, version: str, point_size: int = 16, bounding_box: tuple[int, int] = (6, 8), properties: list[tuple] = [], filename: str = None):     
+        super().__init__(filename, font_name, version)
+
         self.file = None
-        self.version = version
-        self.font_name = font_name
         self.point_size = point_size
         self.bounding_box = bounding_box
         self.properties = properties
@@ -24,9 +22,6 @@ class BDF:
         self.symbols = []
 
         self.compiled = False
-    
-    def add_symbols(self, symbols: list[Symbol]):
-        self.symbols = symbols
 
     def compile(self):
         self.file = open(self.filename, "w")
@@ -62,6 +57,7 @@ class BDF:
 
         self.compiled = True
     
+    """
     def convert_to_ttf(self):
         if not self.compiled:
             raise RuntimeError("Can't convert BDF to TTF before compilation")
@@ -77,3 +73,4 @@ class BDF:
         cmd = f"{bdf2ttf_path.absolute()} {self.filename[:self.filename.rindex('.')]}.ttf {tmpfile.name} {self.filename}"
         subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
         os.remove(tmpfile.name)
+    """

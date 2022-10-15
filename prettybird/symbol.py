@@ -132,6 +132,9 @@ class Symbol:
             and point[0] < self._width
             and point[1] < self._height
         )
+    
+    def point_to_index(self, point):
+        return (self._width + 1) * point[1] + point[0]
 
     def _replace_in_grid(self, new_character, point):
         """Replace a character in the grid
@@ -152,7 +155,7 @@ class Symbol:
                 "Tried to replace a character in the grid, but the point is out of range:",
                 point,
             )
-        converted_index = (self._width + 1) * point[1] + point[0]
+        converted_index = self.point_to_index(point)
         self._grid = (
             self._grid[:converted_index]
             + new_character
