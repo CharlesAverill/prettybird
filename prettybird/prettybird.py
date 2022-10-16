@@ -96,7 +96,6 @@ def main():
     font = get_format(args.format)(args.font_name, "0.1")
     font.add_symbols(list(interpreter.symbols_dict.values()))
     font.compile()
-    print(font.filename)
 
     """
     if args.format == "ttf":

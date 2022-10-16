@@ -1,6 +1,7 @@
 import svgwrite
 import tempfile
 import os
+import subprocess
 import json
 
 from xml.dom import minidom
@@ -34,16 +35,16 @@ class SVG(Format):
                     for y in range(symbol.height):
                         if symbol.grid[symbol.point_to_index((x, y))] != ".":
                             svg_drawing.add(
-                                svg_drawing.rect(insert=(x, y), size=("1px", "1px"))
+                                svg_drawing.rect(insert=(x * 16, y * 16), size=("16px", "16px"))
                             )
                 json_data["glyphs"][hex(ord(symbol.identifier[0]))] = Path(str(svg_drawing.filename)).name
-                os.system(f"ls {temp_dir.resolve()}")
                 svg_drawing.save()
             temp_json = tempfile.NamedTemporaryFile(mode="w")
-            print(json_data)
             json.dump(json_data, temp_json)
             temp_json.flush()
-            os.system(
-                f"fontforge -lang=py -script {Path(__file__).parents[1] / 'fontforge_scripts' / 'svgs2ttf' / 'svgs2ttf'} {temp_json.name}"
+            subprocess.check_output(
+                f"fontforge -lang=py -script {Path(__file__).parents[1] / 'fontforge_scripts' / 'svgs2ttf' / 'svgs2ttf'} {temp_json.name}",
+                shell=True,
+                stderr=subprocess.STDOUT
             )
             temp_json.close()

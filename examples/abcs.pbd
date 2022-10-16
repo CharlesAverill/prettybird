@@ -26,6 +26,19 @@ char a {
 }
 
 /*
+char b {
+    base {
+        blank(8, 12)
+    }
+
+    steps {
+        //draw vector((1, 1), (1, 11))
+        draw circle((3, 6), 2)
+    }
+}
+*/
+
+/*
 Target is 
 ........
 ..000...
