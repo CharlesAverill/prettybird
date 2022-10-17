@@ -145,6 +145,8 @@ class PrettyBirdInterpreter(Interpreter):
                     # Either "filled" or nothing
                     fill_mode = child.value
             elif type(child) == Tree:
+                if self.current_symbol is None:
+                    return
                 self.current_symbol.prepare_instruction(
                     update_mode, fill_mode is not None
                 )

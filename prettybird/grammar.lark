@@ -1,12 +1,14 @@
-?start: character+
+?start: (function_definition | character)+
+
+function_definition: "define" IDENTIFIER function_parameter_list steps_statements
+
+// Was concerned about parameter lists like in "define test(a, b, c,)" but python allows trailing commas
+// so we should allow it too
+function_parameter_list: "(" [function_parameters] ")"
+function_parameters: CNAME "," function_parameters
+                   | CNAME
     
-character: "char" IDENTIFIER ("encoding=" INT)? "{" character_statements "}"
-
-character_statements: character_statement
-                    | character_statement character_statements
-
-character_statement: "base" "{" base_statement "}"
-                   | "steps" steps_statements
+character: "char" IDENTIFIER ("encoding=" INT)? "{" "base" "{" base_statement "}" "steps" steps_statements "}"
 
 ?base_statement: blank_statement
                | constant_base_statement
@@ -21,39 +23,49 @@ constant_base_statement: CONSTANT_BASE_STATEMENT_CHARACTER+ "," constant_base_st
 from_character_base_statement: "from_char" "(" IDENTIFIER ")"
 
 steps_statements: "{" "}"
-                 | "{" step_statement+ "}"
+                | "{" step_statement+ "}"
 
 step_statement: UPDATE_MODE FILLED? HALF? step
               | UPDATE_MODE HALF? FILLED? step
+              | function_call_step
 
-step: point_step
-    | vector_step
-    | circle_step
-    | ellipse_step
-    | square_step
-    | rectangle_step
+?step: point_step
+     | vector_step
+     | circle_step
+     | ellipse_step
+     | square_step
+     | rectangle_step
 
 // Just this point
-point_step: "point" "(" point ")"
+point_step: "point" "(" point_type ")"
 
 // Line from first point to second point
-vector_step: "vector" "(" point "," point ")"
+vector_step: "vector" "(" point_type "," point_type ")"
 
 // Circle with center at point and with radius INT
-circle_step: "circle" "(" point "," INT ")"
+circle_step: "circle" "(" point_type "," int_type ")"
 
 // Ellipse with center at point, width INT, height INT
 // or an ellipse within the rectangle defined by bottomleft=point, topright=point
-ellipse_step: "ellipse" "(" point "," INT "," INT ")"
-            | "ellipse" "(" point "," point ")"
+ellipse_step: "ellipse" "(" point_type "," int_type "," int_type ")"
+            | "ellipse" "(" point_type "," point_type ")"
 
 // Square with top left at point and side length INT
-square_step: "square" "(" point "," INT ")"
+square_step: "square" "(" point_type "," int_type ")"
 
 // Rectangle with top left at point, width INT, height INT
-rectangle_step: "rectangle" "(" point "," INT "," INT ")"
+rectangle_step: "rectangle" "(" point_type "," int_type "," int_type ")"
+
+function_call_step: CNAME "(" [function_call_parameters] ")"
+function_call_parameters: literal "," function_call_parameters
+                        | literal
 
 point: "(" INT "," INT ")"
+
+?type: point_type | int_type
+?point_type: point | CNAME
+?int_type: INT | CNAME
+?literal: point | INT
 
 UPDATE_MODE: ("draw" | "erase")
 

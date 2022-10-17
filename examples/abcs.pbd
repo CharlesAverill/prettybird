@@ -8,6 +8,11 @@ Target is
 ..0000..
 */
 
+define figure_eight(left_center, right_center, radius) {
+    draw circle(left_center, radius)
+    draw circle(right_center, radius)
+}
+
 // the compiler will accept identifiers of length > 1, but it is undefined behavior
 
 // the optional "encoding=INT" behavior explicitly tells the compiler which character this
@@ -24,19 +29,6 @@ char a {
         draw vector((2, 3), (1, 4))
     }
 }
-
-/*
-char b {
-    base {
-        blank(8, 12)
-    }
-
-    steps {
-        //draw vector((1, 1), (1, 11))
-        draw circle((3, 6), 2)
-    }
-}
-*/
 
 /*
 Target is 
@@ -100,5 +92,15 @@ char 0 {
         draw filled ellipse((0, 0), (7, 15))
         erase filled ellipse((1, 1), (6, 14))
         draw filled ellipse((3, 7), (4, 8))
+    }
+}
+
+char 8 {
+    base {
+        blank(8, 12)
+    }
+
+    steps {
+        figure_eight((3, 3), (3, 7), 2)
     }
 }
