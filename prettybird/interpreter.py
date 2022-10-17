@@ -148,6 +148,9 @@ class PrettyBirdInterpreter(Interpreter):
     def _get_point(self, point_tree):
         return (int(point_tree.children[0]), int(point_tree.children[1]))
 
+    def _get_int(self, int_node):
+        return int(int_node)
+
     def vector_step(self, vector_tree):
         first_point = self._get_point(vector_tree.children[0])
         second_point = self._get_point(vector_tree.children[1])
@@ -156,10 +159,10 @@ class PrettyBirdInterpreter(Interpreter):
 
     def circle_step(self, vector_tree):
         center = self._get_point(vector_tree.children[0])
-        radius = int(vector_tree.children[1])
+        radius = self._get_int(vector_tree.children[1])
         self.current_symbol.add_instruction("circle", [center, radius])
 
     def square_step(self, vector_tree):
-        left_top, bottom_right = self._get_point(
-            vector_tree.children[0]), self._get_point(vector_tree.children[1])
-        self.current_symbol.add_instruction("square", [left_top, bottom_right])
+        left_top = self._get_point(vector_tree.children[0])
+        side_length = self._get_int(vector_tree.children[1])
+        self.current_symbol.add_instruction("square", [left_top, side_length])

@@ -1,2 +1,2 @@
-from .interpreter import PrettyBirdInterpreter
-from .symbol import Symbol
+from .interpreter import PrettyBirdInterpreter  # noqa: F401
+from .symbol import Symbol  # noqa: F401

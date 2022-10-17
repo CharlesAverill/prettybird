@@ -1,6 +1,4 @@
 import math
-from lib2to3.pytree import convert
-from multiprocessing.sharedctypes import Value
 
 
 class Symbol:
@@ -304,20 +302,24 @@ class Symbol:
         Args:
             draw_mode (str): One of ["draw", "erase"] describing the behavior of the instruction
             fill_mode (bool): True if the instruction will be filled, false if it will only be an outline
-            inputs (list): The square's left top and buttom right
+            inputs (list): The square's top left and side length
         """
         top_left, side_length = inputs[0], inputs[1]
         [left_x, top_y] = top_left
-        right_x, bottom_y = left_x + side_length, top_y - side_length
+        right_x, bottom_y = left_x + side_length - 1, top_y + side_length - 1
         top_right, bottom_left, bottom_right = (
-            right_x, top_y), (bottom_y, left_x), (bottom_y, right_x)
+            right_x, top_y), (left_x, bottom_y), (right_x, bottom_y)
+        print(top_left, top_right, bottom_left, bottom_right)
         self.vector(draw_mode, fill_mode, [top_left, top_right])
         self.vector(draw_mode, fill_mode, [top_left, bottom_left])
-        self.vector(draw_mode, fill_mode, [bottom_left, bottom_right])
-        self.vector(draw_mode, fill_mode, [top_right, bottom_right])
+        self.vector(draw_mode, fill_mode, [bottom_right, top_right])
+        self.vector(draw_mode, fill_mode, [bottom_right, bottom_left])
 
         if fill_mode:
-            pass
+            for y in range(bottom_y):
+                left_point, right_point = (0, y), (right_x, y)
+                print(left_point, right_point)
+                self.vector(draw_mode, fill_mode, [left_point, right_point])
 
     def __str__(self) -> str:
         return self.get_grid()

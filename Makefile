@@ -7,12 +7,14 @@ help:
 	@echo "make lint: lint python files"
 	@echo "make run input=<file_to_compile>: compile <file_to_compile>"
 	@echo "make test: run tests"
+	@echo "make test: run tests: output in a more verbose way"
 
 format:
 	poetry run autopep8 --in-place prettybird/*.py -r
 
 install:
 	poetry install
+	poetry run pre-commit install
 
 lint:
 	poetry run flake8 prettybird/*.py --ignore=E501,W503
@@ -23,3 +25,6 @@ run:
 
 test:
 	poetry run pytest
+
+vtest:
+	poetry run pytest -vv

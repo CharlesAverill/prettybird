@@ -1,0 +1,20 @@
+on: [push]
+
+jobs:
+  python-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+      - name: Build docker images
+        run: |
+          docker build -t local < ./Dockerfile
+      - name: Install dependencies
+        run: |
+          make install
+      - name: Run linter
+        run: |
+          make lint
+      - name: Run tests
+        run: |
+          docker run -it -v $PWD:/src -w/src local make vtest
