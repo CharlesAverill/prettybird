@@ -7,7 +7,7 @@ help:
 	@echo "make lint: lint python files"
 	@echo "make run input=<file_to_compile>: compile <file_to_compile> to a bitmap TTF file"
 	@echo "make test: run tests"
-	@echo "make test: run tests: output in a more verbose way"
+	@echo "make vtest: run tests with verbose output"
 
 format:
 	poetry run autopep8 --in-place prettybird/*.py -r
