@@ -1,11 +1,12 @@
 import argparse
-import os
 import pathlib
 
 from lark import Lark
 
 from prettybird import PrettyBirdInterpreter
-from prettybird.formats import *
+from prettybird.formats import Format, BDF, SVG
+
+from typing import Type
 
 
 def get_args():
@@ -41,11 +42,13 @@ def get_args():
     return parser.parse_args()
 
 
-def get_format(format_name: str) -> Format:
+def get_format(format_name: str) -> Type[Format]:
     format_name = format_name.upper()
     if format_name == "BDF":
         return BDF
     elif format_name == "SVG":
+        return SVG
+    elif format_name == "TTF":
         return SVG
     raise NotImplementedError(f"Font format {format_name} is not supported")
 
@@ -93,7 +96,8 @@ def main():
         properties=[("FONT_ASCENT", 14), ("FONT_DESCENT", 2)],
     )
     """
-    font = get_format(args.format)(args.font_name, "0.1")
+    font = get_format(args.format)(
+        args.font_name, "0.1", to_ttf=args.format == "ttf")
     font.add_symbols(list(interpreter.symbols_dict.values()))
     font.compile()
 

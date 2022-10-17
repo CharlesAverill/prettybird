@@ -11,7 +11,7 @@ from prettybird import Symbol
 from prettybird.formats import Format
 
 class BDF(Format):
-    def __init__(self, font_name: str, version: str, point_size: int = 16, bounding_box: tuple[int, int] = (6, 8), properties: list[tuple] = [], filename: str = None):     
+    def __init__(self, font_name: str, version: str, point_size: int = 16, bounding_box: tuple[int, int] = (6, 8), properties: list[tuple] = [], filename: str = ""):     
         super().__init__(filename, font_name, version)
 
         self.file = None

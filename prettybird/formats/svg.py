@@ -1,4 +1,4 @@
-import svgwrite
+import svgwrite # type: ignore
 import tempfile
 import os
 import subprocess
@@ -13,8 +13,9 @@ from pathlib import Path
 
 
 class SVG(Format):
-    def __init__(self, font_name: str, version: str, filename: str = None):
+    def __init__(self, font_name: str, version: str, filename: str = "", to_ttf: bool = False):
         super().__init__(filename, font_name, version)
+        self.to_ttf = to_ttf
 
     def compile(self):
         with Path(tempfile.TemporaryDirectory().name) as temp_dir:
@@ -23,7 +24,7 @@ class SVG(Format):
             json_data = {
                 "props": {},
                 "input": str(temp_dir.resolve()),
-                "output": [str((Path.cwd() / (self.filename)).resolve()) + ".ttf"],
+                "output": [str((Path.cwd() / (self.filename)).resolve()) + ".ttf" if self.to_ttf else ""],
                 "glyphs": {},
             }
             for symbol in self.symbols:

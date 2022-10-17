@@ -1,4 +1,5 @@
 import math
+from typing import List
 
 
 class Symbol:
@@ -132,7 +133,7 @@ class Symbol:
             and point[0] < self._width
             and point[1] < self._height
         )
-    
+
     def point_to_index(self, point):
         return (self._width + 1) * point[1] + point[0]
 
@@ -159,7 +160,7 @@ class Symbol:
         self._grid = (
             self._grid[:converted_index]
             + new_character
-            + self._grid[converted_index + 1 :]
+            + self._grid[converted_index + 1:]
         )
 
     @property
@@ -194,7 +195,8 @@ class Symbol:
             instruction_name (str): Name of instruction type
             inputs (list): List of input data to instruction
         """
-        self._instructions.append((instruction_name, *self._instruction_buffer, inputs))
+        self._instructions.append(
+            (instruction_name, *self._instruction_buffer, inputs))
         self._instruction_buffer = ()
 
     def get_draw_char(self, draw_mode):
@@ -219,8 +221,10 @@ class Symbol:
         for instruction in self._instructions:
             instruction_name, draw_mode, fill_mode, inputs = instruction
             if instruction_name not in self._instructions_map:
-                raise NameError(f'Received bad instruction "{instruction_name}"')
-            self._instructions_map[instruction_name](draw_mode, fill_mode, inputs)
+                raise NameError(
+                    f'Received bad instruction "{instruction_name}"')
+            self._instructions_map[instruction_name](
+                draw_mode, fill_mode, inputs)
 
     def point(self, draw_mode, fill_mode, inputs):
         draw_char = self.get_draw_char(draw_mode)
@@ -331,14 +335,14 @@ class Symbol:
                 )
                 dy += 1
 
-    def ellipse(self, draw_mode, fill_mode, inputs):
+    def ellipse(self, draw_mode, fill_mode, inputs: List[tuple[int, int]]):
         draw_char = self.get_draw_char(draw_mode)
         p0, p1 = inputs
         x0, y0, x1, y1 = *p0, *p1
 
         a = abs(x1 - x0)
         b = abs(y1 - y0)
-        
+
         if fill_mode:
             h, k = x0 + a / 2, y0 + b / 2
             for x in range(x0, x1 + 1):
@@ -395,7 +399,8 @@ class Symbol:
         out = ""
         bitstring = self.grid.replace("0", "1").replace(".", "0")
         for line in bitstring.split("\n"):
-            bits_by_8 = [int(line[i : i + 8], 2) for i in range(0, len(line), 8)]
+            bits_by_8 = [int(line[i: i + 8], 2)
+                         for i in range(0, len(line), 8)]
             outline = ""
             for bitline in bits_by_8:
                 outline += f"{bitline:02x}".upper()
