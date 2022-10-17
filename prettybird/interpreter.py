@@ -114,7 +114,8 @@ class PrettyBirdInterpreter(Interpreter):
         """
         from_identifier = character_base_tree.children[0].value
         self.current_symbol.prepare_instruction("draw", False)
-        self.current_symbol.add_instruction("from_char", [self.get_symbol(from_identifier)])
+        self.current_symbol.add_instruction(
+            "from_char", [self.get_symbol(from_identifier)])
 
     def steps_statements(self, statements_tree):
         """Parse a set of steps statements
@@ -141,7 +142,8 @@ class PrettyBirdInterpreter(Interpreter):
                 )
                 self.visit(child)
             else:
-                raise TypeError(f"Unexpected type {type(child)} in step_statement")
+                raise TypeError(
+                    f"Unexpected type {type(child)} in step_statement")
 
     def _get_point(self, point_tree):
         return (int(point_tree.children[0]), int(point_tree.children[1]))
@@ -149,12 +151,15 @@ class PrettyBirdInterpreter(Interpreter):
     def vector_step(self, vector_tree):
         first_point = self._get_point(vector_tree.children[0])
         second_point = self._get_point(vector_tree.children[1])
-        self.current_symbol.add_instruction("vector", [first_point, second_point])
+        self.current_symbol.add_instruction(
+            "vector", [first_point, second_point])
 
     def circle_step(self, vector_tree):
         center = self._get_point(vector_tree.children[0])
         radius = int(vector_tree.children[1])
         self.current_symbol.add_instruction("circle", [center, radius])
 
-    def square_step(self, square_tree)
-        pass
+    def square_step(self, vector_tree):
+        left_top, bottom_right = self._get_point(
+            vector_tree.children[0]), self._get_point(vector_tree.children[1])
+        self.current_symbol.add_instruction("square", [left_top, bottom_right])
