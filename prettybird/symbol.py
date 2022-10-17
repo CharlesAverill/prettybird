@@ -348,7 +348,6 @@ class Symbol:
         right_x, bottom_y = left_x + side_length - 1, top_y + side_length - 1
         top_right, bottom_left, bottom_right = (
             right_x, top_y), (left_x, bottom_y), (right_x, bottom_y)
-        print(top_left, top_right, bottom_left, bottom_right)
         self.vector(draw_mode, fill_mode, [top_left, top_right])
         self.vector(draw_mode, fill_mode, [top_left, bottom_left])
         self.vector(draw_mode, fill_mode, [bottom_right, top_right])
@@ -357,7 +356,6 @@ class Symbol:
         if fill_mode:
             for y in range(bottom_y):
                 left_point, right_point = (0, y), (right_x, y)
-                print(left_point, right_point)
                 self.vector(draw_mode, fill_mode, [left_point, right_point])
 
     def __str__(self) -> str:
