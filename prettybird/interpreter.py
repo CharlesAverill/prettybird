@@ -168,9 +168,9 @@ class PrettyBirdInterpreter(Interpreter):
         self.current_symbol.add_instruction(
             "vector", [first_point, second_point])
 
-    def circle_step(self, vector_tree):
-        center = self._get_point(vector_tree.children[0])
-        radius = self._get_int(vector_tree.children[1])
+    def circle_step(self, circle_tree):
+        center = self._get_point(circle_tree.children[0])
+        radius = self._get_int(circle_tree.children[1])
         self.current_symbol.add_instruction("circle", [center, radius])
 
     def square_step(self, vector_tree):
