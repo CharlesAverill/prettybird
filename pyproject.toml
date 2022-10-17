@@ -4,11 +4,13 @@ description = ""
 name = "prettybird"
 readme = "README.md"
 version = "0.1.0"
+include = ["lib/bdf2ttf/bdf2ttf"]
 
 [tool.poetry.dependencies]
 lark = "^1.1.2"
 pathlib = "^1.0.1"
 python = "^3.9"
+svgwrite = "^1.4.3"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.7.0"

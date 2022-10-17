@@ -1,6 +1,6 @@
 ?start: character+
     
-character: "char" IDENTIFIER "{" character_statements "}" -> character_declaration
+character: "char" IDENTIFIER ("encoding=" INT)? "{" character_statements "}"
 
 character_statements: character_statement
                     | character_statement character_statements
@@ -23,13 +23,18 @@ from_character_base_statement: "from_char" "(" IDENTIFIER ")"
 steps_statements: "{" "}"
                  | "{" step_statement+ "}"
 
-step_statement: UPDATE_MODE FILLED? step
+step_statement: UPDATE_MODE FILLED? HALF? step
+              | UPDATE_MODE HALF? FILLED? step
 
-step: vector_step
-     | circle_step
-     | ellipse_step
-     | square_step
-     | rectangle_step
+step: point_step
+    | vector_step
+    | circle_step
+    | ellipse_step
+    | square_step
+    | rectangle_step
+
+// Just this point
+point_step: "point" "(" point ")"
 
 // Line from first point to second point
 vector_step: "vector" "(" point "," point ")"
@@ -38,7 +43,9 @@ vector_step: "vector" "(" point "," point ")"
 circle_step: "circle" "(" point "," INT ")"
 
 // Ellipse with center at point, width INT, height INT
+// or an ellipse within the rectangle defined by bottomleft=point, topright=point
 ellipse_step: "ellipse" "(" point "," INT "," INT ")"
+            | "ellipse" "(" point "," point ")"
 
 // Square with top left at point and side length INT
 square_step: "square" "(" point "," INT ")"
@@ -52,9 +59,13 @@ UPDATE_MODE: ("draw" | "erase")
 
 FILLED: "filled"
 
+HALF: "half" "(" DIRECTION ")"
+
+DIRECTION: ["top" | "bottom" | "left" | "right"]
+
 CONSTANT_BASE_STATEMENT_CHARACTER: ("0" | ".")
 
-IDENTIFIER: CNAME
+IDENTIFIER: CNAME | DIGIT
 
 SINGLE_LINE_COMMENT: "//" /[^\n]*/ "\n"
 
@@ -67,3 +78,5 @@ WHITESPACE: /\s+/
 %import common.CNAME
 %import common.INT
 %import common.C_COMMENT
+%import common.DIGIT
+%import common.INT

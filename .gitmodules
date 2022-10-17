@@ -1,0 +1,3 @@
+[submodule "prettybird/fontforge_scripts/svgs2ttf"]
+	path = prettybird/fontforge_scripts/svgs2ttf
+	url = https://github.com/CharlesAverill/svgs2ttf.git

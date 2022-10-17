@@ -5,7 +5,7 @@ help:
 	@echo "make format: format python files"
 	@echo "make install: install prettybird in your env"
 	@echo "make lint: lint python files"
-	@echo "make run input=<file_to_compile>: compile <file_to_compile>"
+	@echo "make run input=<file_to_compile>: compile <file_to_compile> to a bitmap TTF file"
 	@echo "make test: run tests"
 	@echo "make test: run tests: output in a more verbose way"
 
@@ -21,7 +21,7 @@ lint:
 	poetry run mypy .
 
 run:
-	poetry run prettybird $(input)
+	poetry run prettybird $(input) --format=SVG
 
 test:
 	poetry run pytest

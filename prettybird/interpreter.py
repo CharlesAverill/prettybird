@@ -31,12 +31,12 @@ class PrettyBirdInterpreter(Interpreter):
         """
         if identifier not in self.symbols_dict:
             if raise_error:
-                raise KeyError(f'Symbol "{identifier}" not defined')
+                raise NameError(f'Symbol "{identifier}" not defined')
             else:
                 return None
         return self.symbols_dict[identifier]
 
-    def character_declaration(self, declaration_tree):
+    def character(self, declaration_tree):
         """Process character declaration
 
         Args:
@@ -49,13 +49,19 @@ class PrettyBirdInterpreter(Interpreter):
 
         identifier_token = declaration_tree.children[0]
         identifier_name = identifier_token.value
-        print("Declare", identifier_name)
+
+        encoding_value = None
+        if type(declaration_tree.children[1]) == Token and declaration_tree.children[1].type == "INT":
+            encoding_value = declaration_tree.children[1]
+        if encoding_value is None:
+            encoding_value = ord(identifier_name)
 
         # Check if character has already been defined
         if identifier_name in self.symbols_dict:
             raise NameError(f'Identifier "{identifier_name}" already exists')
 
-        self.symbols_dict[identifier_name] = Symbol(identifier_name)
+        self.symbols_dict[identifier_name] = Symbol(
+            identifier_name, encoding_value)
 
         self.current_symbol = self.symbols_dict[identifier_name]
 
@@ -128,6 +134,8 @@ class PrettyBirdInterpreter(Interpreter):
     def step_statement(self, statement_tree):
         update_mode = None
         fill_mode = None
+        # half_mode = None
+        # print(statement_tree.children)
         for child in statement_tree.children:
             if type(child) == Token:
                 if update_mode is None:
@@ -150,6 +158,9 @@ class PrettyBirdInterpreter(Interpreter):
 
     def _get_int(self, int_node):
         return int(int_node)
+    def point_step(self, point_tree):
+        self.current_symbol.add_instruction(
+            "point", [self._get_point(point_tree.children[0])])
 
     def vector_step(self, vector_tree):
         first_point = self._get_point(vector_tree.children[0])
@@ -166,3 +177,16 @@ class PrettyBirdInterpreter(Interpreter):
         left_top = self._get_point(vector_tree.children[0])
         side_length = self._get_int(vector_tree.children[1])
         self.current_symbol.add_instruction("square", [left_top, side_length])
+
+    def ellipse_step(self, ellipse_tree):
+        p1, p2 = None, None
+        if type(ellipse_tree.children[1]) == Token:
+            center = self._get_point(ellipse_tree.children[0])
+            width = int(ellipse_tree.children[1])
+            height = int(ellipse_tree.children[2])
+            p1 = (center[0] - int(width / 2), center[1] - int(height / 2))
+            p2 = (center[0] + int(width / 2), center[1] + int(height / 2))
+        else:
+            p1 = self._get_point(ellipse_tree.children[0])
+            p2 = self._get_point(ellipse_tree.children[1])
+        self.current_symbol.add_instruction("ellipse", [p1, p2])
