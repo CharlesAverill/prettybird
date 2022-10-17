@@ -3,16 +3,15 @@
 
 help:
 	@echo "make format: format python files"
-	@echo "make install cc=[bc, cyg, gcc, msvc, osx, sun]: install prettybird in your env and use <cc> as the C compiler"
+	@echo "make install: install prettybird in your env"
 	@echo "make lint: lint python files"
-	@echo "make run input=<file_to_compile>: compile <file_to_compile>"
+	@echo "make run input=<file_to_compile>: compile <file_to_compile> to a bitmap TTF file"
 	@echo "make test: run tests"
 
 format:
 	poetry run autopep8 --in-place prettybird/*.py -r
 
 install:
-	cd lib/bdf2ttf && make $(cc)-clean && make $(cc)
 	poetry install
 
 lint:
@@ -20,7 +19,7 @@ lint:
 	poetry run mypy .
 
 run:
-	poetry run prettybird $(input)
+	poetry run prettybird $(input) --format=SVG
 
 test:
 	poetry run pytest

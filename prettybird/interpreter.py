@@ -60,7 +60,8 @@ class PrettyBirdInterpreter(Interpreter):
         if identifier_name in self.symbols_dict:
             raise NameError(f'Identifier "{identifier_name}" already exists')
 
-        self.symbols_dict[identifier_name] = Symbol(identifier_name, encoding_value)
+        self.symbols_dict[identifier_name] = Symbol(
+            identifier_name, encoding_value)
 
         self.current_symbol = self.symbols_dict[identifier_name]
 
@@ -154,9 +155,10 @@ class PrettyBirdInterpreter(Interpreter):
 
     def _get_point(self, point_tree):
         return (int(point_tree.children[0]), int(point_tree.children[1]))
-    
+
     def point_step(self, point_tree):
-        self.current_symbol.add_instruction("point", [self._get_point(point_tree.children[0])])
+        self.current_symbol.add_instruction(
+            "point", [self._get_point(point_tree.children[0])])
 
     def vector_step(self, vector_tree):
         first_point = self._get_point(vector_tree.children[0])
@@ -168,7 +170,7 @@ class PrettyBirdInterpreter(Interpreter):
         center = self._get_point(circle_tree.children[0])
         radius = int(circle_tree.children[1])
         self.current_symbol.add_instruction("circle", [center, radius])
-    
+
     def ellipse_step(self, ellipse_tree):
         p1, p2 = None, None
         if type(ellipse_tree.children[1]) == Token:
