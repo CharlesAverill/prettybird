@@ -24,7 +24,7 @@ class SVG(Format):
             json_data = {
                 "props": {},
                 "input": str(temp_dir.resolve()),
-                "output": [str((Path.cwd() / (self.filename)).resolve()) + ".ttf" if self.to_ttf else ""],
+                "output": [str((Path.cwd() / (self.filename)).resolve()) + (".ttf" if self.to_ttf else "")],
                 "glyphs": {},
             }
             for symbol in self.symbols:

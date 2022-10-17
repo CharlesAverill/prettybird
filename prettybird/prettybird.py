@@ -59,7 +59,7 @@ def main():
 
     if args.font_name is None:
         args.font_name = pathlib.Path(args.input_file).stem
-    args.format == args.format.lower()
+    args.format = args.format.lower()
 
     # Parse the grammar file
     parser = Lark(open(pathlib.Path(__file__).parent / "grammar.lark"))

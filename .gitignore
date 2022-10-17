@@ -4,6 +4,7 @@ __pycache__/*
 prettybird/__pycache__/*
 **.pyc
 **.ttf
+**.svg
 **.bdf
 **.pcf
 lib/bdf2ttf/**
