@@ -7,7 +7,7 @@ from typing import List
 class Format(ABC):
     def __init__(self, filename: str, font_name: str, version: str):
         file_suffix = "." + type(self).__name__.lower()
-        if filename is None or filename == "":
+        if not filename:
             filename = font_name + file_suffix
         elif not filename.lower().endswith(file_suffix):
             raise UserWarning(f"{type(self).__name__} files should end with \"{file_suffix}\"")
