@@ -9,7 +9,7 @@ def test_square():
                        "../prettybird/grammar.lark", encoding="utf-8"))
     interpreter = PrettyBirdInterpreter()
     input_pbd = r"""
-char square {
+char s {
     base {
         blank(8, 8)
     }
@@ -44,7 +44,7 @@ def test_filled_squared():
                        "../prettybird/grammar.lark", encoding="utf-8"))
     interpreter = PrettyBirdInterpreter()
     input_pbd = r"""
-char filled_square {
+char f {
     base {
         blank(8, 8)
     }

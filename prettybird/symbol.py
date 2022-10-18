@@ -22,6 +22,7 @@ class Symbol:
             "point": self.point,
             "vector": self.vector,
             "circle": self.circle,
+            "square": self.square,
             "ellipse": self.ellipse,
             "from_char": self._init_grid_from_symbol,
         }
@@ -354,7 +355,7 @@ class Symbol:
         self.vector(draw_mode, fill_mode, [bottom_right, bottom_left])
 
         if fill_mode:
-            for y in range(bottom_y):
+            for y in range(top_y, bottom_y):
                 left_point, right_point = (0, y), (right_x, y)
                 self.vector(draw_mode, fill_mode, [left_point, right_point])
 

@@ -158,6 +158,7 @@ class PrettyBirdInterpreter(Interpreter):
 
     def _get_int(self, int_node):
         return int(int_node)
+
     def point_step(self, point_tree):
         self.current_symbol.add_instruction(
             "point", [self._get_point(point_tree.children[0])])
