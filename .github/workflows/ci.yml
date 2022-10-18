@@ -3,18 +3,19 @@ on: [push]
 jobs:
   python-test:
     runs-on: ubuntu-latest
+    container: mcr.microsoft.com/devcontainers/python:3.9
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      - name: Build docker images
-        run: |
-          docker build -t local < ./Dockerfile
       - name: Install dependencies
         run: |
+          pip install --no-cache-dir "poetry==$POETRY_VERSION"
           make install
+        env:
+          POETRY_VERSION: 1.2.1
       - name: Run linter
         run: |
           make lint
       - name: Run tests
         run: |
-          docker run -it -v $PWD:/src -w/src local make vtest
+          make vtest
