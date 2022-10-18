@@ -46,24 +46,26 @@ def test_filled_squared():
     input_pbd = r"""
 char f {
     base {
-        blank(8, 8)
+        blank(10, 10)
     }
 
     steps {
-        draw filled square((0, 0), 8)
+        draw filled square((1, 1), 8)
     }
 }
 """
     parse_tree = parser.parse(input_pbd)
     interpreter.visit(parse_tree)
-    expected = """00000000
-00000000
-00000000
-00000000
-00000000
-00000000
-00000000
-00000000"""
+    expected = """..........
+.00000000.
+.00000000.
+.00000000.
+.00000000.
+.00000000.
+.00000000.
+.00000000.
+.00000000.
+.........."""
     compiled_symbols = []
     for symbol in interpreter.symbols_dict.values():
         symbol.compile()

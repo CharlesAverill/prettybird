@@ -356,7 +356,7 @@ class Symbol:
 
         if fill_mode:
             for y in range(top_y, bottom_y):
-                left_point, right_point = (0, y), (right_x, y)
+                left_point, right_point = (left_x, y), (right_x, y)
                 self.vector(draw_mode, fill_mode, [left_point, right_point])
 
     def __str__(self) -> str:
