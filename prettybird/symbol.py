@@ -22,6 +22,7 @@ class Symbol:
             "point": self.point,
             "vector": self.vector,
             "circle": self.circle,
+            "square": self.square,
             "ellipse": self.ellipse,
             "from_char": self._init_grid_from_symbol,
         }
@@ -334,6 +335,32 @@ class Symbol:
                     ],
                 )
                 dy += 1
+
+    def square(self, draw_mode, fill_mode, inputs):
+        """Draw a square vector onto the grid
+
+        Args:
+            draw_mode (str): One of ["draw", "erase"] describing the behavior of the instruction
+            fill_mode (bool): True if the instruction will be filled, false if it will only be an outline
+            inputs (list): The square's top left and side length
+        """
+        top_left, side_length = inputs[0], inputs[1]
+        [left_x, top_y] = top_left
+        right_x, bottom_y = left_x + side_length - 1, top_y + side_length - 1
+        top_right, bottom_left, bottom_right = (
+            right_x, top_y), (left_x, bottom_y), (right_x, bottom_y)
+        self.vector(draw_mode, fill_mode, [top_left, top_right])
+        self.vector(draw_mode, fill_mode, [top_left, bottom_left])
+        self.vector(draw_mode, fill_mode, [bottom_right, top_right])
+        self.vector(draw_mode, fill_mode, [bottom_right, bottom_left])
+
+        if fill_mode:
+            for y in range(top_y, bottom_y):
+                left_point, right_point = (left_x, y), (right_x, y)
+                self.vector(draw_mode, fill_mode, [left_point, right_point])
+
+    def __str__(self) -> str:
+        return self.get_grid()
 
     def ellipse(self, draw_mode, fill_mode, inputs: List[tuple[int, int]]):
         draw_char = self.get_draw_char(draw_mode)

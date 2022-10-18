@@ -1,0 +1,18 @@
+repos:
+- repo: local
+  hooks:
+    - id: format
+      name: format python files
+      language: system
+      entry: |
+        make format
+    - id: lint
+      name: lint python files
+      language: system
+      entry: |
+        make lint
+    - id: test
+      name: check if tests work
+      language: system
+      entry: |
+        make test
