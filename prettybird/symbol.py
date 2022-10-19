@@ -18,14 +18,6 @@ class Symbol:
         self._instruction_buffer = ()
         self._instructions = []
 
-        self._instructions_map = {
-            "point": self.point,
-            "vector": self.vector,
-            "circle": self.circle,
-            "ellipse": self.ellipse,
-            "from_char": self._init_grid_from_symbol,
-        }
-
     @property
     def identifier(self):
         """Get the name of the Symbol
@@ -220,10 +212,10 @@ class Symbol:
         """
         for instruction in self._instructions:
             instruction_name, draw_mode, fill_mode, inputs = instruction
-            if instruction_name not in self._instructions_map:
+            if instruction_name not in INSTRUCTIONS_MAP:
                 raise NameError(
                     f'Received bad instruction "{instruction_name}"')
-            self._instructions_map[instruction_name](
+            INSTRUCTIONS_MAP[instruction_name](self,
                 draw_mode, fill_mode, inputs)
 
     def point(self, draw_mode, fill_mode, inputs):
@@ -434,3 +426,14 @@ class Symbol:
 
         out += "~" * self._width
         return out
+
+
+
+
+INSTRUCTIONS_MAP = {
+    "point": Symbol.point,
+    "vector": Symbol.vector,
+    "circle": Symbol.circle,
+    "ellipse": Symbol.ellipse,
+    "from_char": Symbol._init_grid_from_symbol,
+}

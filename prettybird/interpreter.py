@@ -1,23 +1,39 @@
+from turtle import circle
 from lark.lexer import Token
 from lark.tree import Tree
 from lark.visitors import Interpreter
 
 from .symbol import Symbol
+from .function import Function
 from .utils.string_utils import get_empty_grid
 
 
 class PrettyBirdInterpreter(Interpreter):
     def __init__(self):
         """Initialize the Interpreter"""
-        self.symbols_dict = {}
+        self.symbols = {}
+        self.functions = {}
         self.current_symbol = None
+        self.current_function = None
 
     def setup_character_declaration(self):
         """Initialize values for character declaration statements"""
         self.current_symbol = None
+    
+    def prepare_instruction(self, update_mode, fill_mode):
+        if self.current_symbol is not None:
+            self.current_symbol.prepare_instruction(update_mode, fill_mode)
+        elif self.current_function is not None:
+            self.current_function.prepare_instruction(update_mode, fill_mode)
+    
+    def add_instruction(self, name, data):
+        if self.current_symbol is not None:
+            self.current_symbol.add_instruction(name, data)
+        elif self.current_function is not None:
+            self.current_function.add_instruction(name, data)
 
     def get_symbol(self, identifier, raise_error=True):
-        """Gets a symbol from self.symbols_dict and does error checking
+        """Gets a symbol from self.symbols and does error checking
 
         Args:
             identifier (str): Identifier of Symbol to retrieve
@@ -29,12 +45,12 @@ class PrettyBirdInterpreter(Interpreter):
         Returns:
             Symbol: None if not raise_error and identifier has not been defined, otherwise the Symbol being searched for
         """
-        if identifier not in self.symbols_dict:
+        if identifier not in self.symbols:
             if raise_error:
                 raise NameError(f'Symbol "{identifier}" not defined')
             else:
                 return None
-        return self.symbols_dict[identifier]
+        return self.symbols[identifier]
 
     def character(self, declaration_tree):
         """Process character declaration
@@ -57,15 +73,18 @@ class PrettyBirdInterpreter(Interpreter):
             encoding_value = ord(identifier_name)
 
         # Check if character has already been defined
-        if identifier_name in self.symbols_dict:
+        if identifier_name in self.symbols:
             raise NameError(f'Identifier "{identifier_name}" already exists')
 
-        self.symbols_dict[identifier_name] = Symbol(
+        self.symbols[identifier_name] = Symbol(
             identifier_name, encoding_value)
 
-        self.current_symbol = self.symbols_dict[identifier_name]
+        self.current_symbol = self.symbols[identifier_name]
+        self.current_function = None
 
         self.visit_children(declaration_tree)
+
+        self.current_symbol = None
 
     def blank_statement(self, blank_tree):
         """Set a character's base to a blank base
@@ -123,6 +142,40 @@ class PrettyBirdInterpreter(Interpreter):
         self.current_symbol.add_instruction(
             "from_char", [self.get_symbol(from_identifier)])
 
+    def function_definition(self, function_def_tree):
+        function_name = function_def_tree.children[0].value
+        function_parameter_names = self.visit(function_def_tree.children[1])
+
+        self.current_symbol = None
+        self.current_function = Function(
+            function_name, function_parameter_names, function_def_tree.children[2])
+
+        # self.visit(function_def_tree.children[2])
+
+        self.functions[function_name] = self.current_function
+        self.current_function = None
+
+    def function_parameter_list(self, function_params_tree):
+        return self.visit(function_params_tree.children[0])
+
+    def function_parameters(self, function_params_tree):
+        if type(function_params_tree) == Token:
+            return [function_params_tree.value]
+        if not len(function_params_tree.children):
+            return []
+        out = [function_params_tree.children[0].value]
+        if len(function_params_tree.children) > 1:
+            out += self.visit(function_params_tree.children[1])
+        return out
+    
+    def function_call_step(self, function_call_tree):
+        function_name = function_call_tree.children[0].value
+        if function_name not in self.functions:
+            raise NameError(f"Undeclared function \"{function_name}\"")
+        
+        function_params = []
+        pass
+
     def steps_statements(self, statements_tree):
         """Parse a set of steps statements
 
@@ -145,11 +198,7 @@ class PrettyBirdInterpreter(Interpreter):
                     # Either "filled" or nothing
                     fill_mode = child.value
             elif type(child) == Tree:
-                if self.current_symbol is None:
-                    return
-                self.current_symbol.prepare_instruction(
-                    update_mode, fill_mode is not None
-                )
+                self.prepare_instruction(update_mode, fill_mode is not None)
                 self.visit(child)
             else:
                 raise TypeError(
@@ -159,19 +208,19 @@ class PrettyBirdInterpreter(Interpreter):
         return (int(point_tree.children[0]), int(point_tree.children[1]))
 
     def point_step(self, point_tree):
-        self.current_symbol.add_instruction(
+        self.add_instruction(
             "point", [self._get_point(point_tree.children[0])])
 
     def vector_step(self, vector_tree):
         first_point = self._get_point(vector_tree.children[0])
         second_point = self._get_point(vector_tree.children[1])
-        self.current_symbol.add_instruction(
+        self.add_instruction(
             "vector", [first_point, second_point])
 
     def circle_step(self, circle_tree):
         center = self._get_point(circle_tree.children[0])
         radius = int(circle_tree.children[1])
-        self.current_symbol.add_instruction("circle", [center, radius])
+        self.add_instruction("circle", [center, radius])
 
     def ellipse_step(self, ellipse_tree):
         p1, p2 = None, None
@@ -184,4 +233,4 @@ class PrettyBirdInterpreter(Interpreter):
         else:
             p1 = self._get_point(ellipse_tree.children[0])
             p2 = self._get_point(ellipse_tree.children[1])
-        self.current_symbol.add_instruction("ellipse", [p1, p2])
+        self.add_instruction("ellipse", [p1, p2])

@@ -1,14 +1,7 @@
 # https://adobe-type-tools.github.io/font-tech-notes/pdfs/5005.BDF_Spec.pdf
 # https://en.wikipedia.org/wiki/Glyph_Bitmap_Distribution_Format
 
-import os
-import subprocess
-import tempfile
-
-from pathlib import Path
-
-from prettybird import Symbol
-from prettybird.formats import Format
+from . import Format
 
 class BDF(Format):
     def __init__(self, font_name: str, version: str, point_size: int = 16, bounding_box: tuple[int, int] = (6, 8), properties: list[tuple] = [], filename: str = ""):     
@@ -23,7 +16,10 @@ class BDF(Format):
 
         self.compiled = False
 
-    def compile(self):
+    def compile(self, to_ttf=False):
+        if to_ttf:
+            raise NotImplementedError("BDF -> TTF conversion not supported")
+        
         self.file = open(self.filename, "w")
 
         self.file.write(f"STARTFONT {str(self.version)}\n")

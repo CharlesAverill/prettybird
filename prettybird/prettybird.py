@@ -3,8 +3,8 @@ import pathlib
 
 from lark import Lark
 
-from prettybird import PrettyBirdInterpreter
-from prettybird.formats import Format, BDF, SVG
+from . import PrettyBirdInterpreter
+from .formats import Format, BDF, SVG
 
 from typing import Type
 
@@ -81,7 +81,7 @@ def main():
             exit(1)
         """
 
-    for symbol in interpreter.symbols_dict.values():
+    for symbol in interpreter.symbols.values():
         symbol.compile()
         if args.stdout:
             print(symbol)
@@ -97,9 +97,9 @@ def main():
     )
     """
     font = get_format(args.format)(
-        args.font_name, "0.1", to_ttf=args.format == "ttf")
-    font.add_symbols(list(interpreter.symbols_dict.values()))
-    font.compile()
+        args.font_name, "0.1")
+    font.add_symbols(list(interpreter.symbols.values()))
+    font.compile(to_ttf=args.format == "ttf")
 
     """
     if args.format == "ttf":

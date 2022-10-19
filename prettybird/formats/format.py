@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from prettybird.symbol import Symbol
+from ..symbol import Symbol
 
 from typing import List
 
@@ -21,5 +21,5 @@ class Format(ABC):
         self.symbols = symbols
     
     @abstractmethod
-    def compile(self):
+    def compile(self, to_ttf=False):
         pass

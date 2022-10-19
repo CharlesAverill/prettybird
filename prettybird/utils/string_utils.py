@@ -1,6 +1,3 @@
-from multiprocessing.sharedctypes import Value
-
-
 def get_empty_grid(width, height):
     """Get a string containing a grid filled with the "." character given dimensions
 

@@ -7,24 +7,23 @@ import json
 from xml.dom import minidom
 import xml.etree.ElementTree as ET
 
-from prettybird.formats import Format
+from . import Format
 
 from pathlib import Path
 
 
 class SVG(Format):
-    def __init__(self, font_name: str, version: str, filename: str = "", to_ttf: bool = False):
+    def __init__(self, font_name: str, version: str, filename: str = ""):
         super().__init__(filename, font_name, version)
-        self.to_ttf = to_ttf
 
-    def compile(self):
+    def compile(self, to_ttf=False):
         with Path(tempfile.TemporaryDirectory().name) as temp_dir:
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
             json_data = {
                 "props": {},
                 "input": str(temp_dir.resolve()),
-                "output": [str((Path.cwd() / (self.filename)).resolve()) + (".ttf" if self.to_ttf else "")],
+                "output": [str((Path.cwd() / (self.filename)).resolve()) + (".ttf" if to_ttf else "")],
                 "glyphs": {},
             }
             for symbol in self.symbols:
