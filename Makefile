@@ -1,5 +1,5 @@
 # makefile for poetry
-.PHONY: help format install lint run test
+.PHONY: help format install lint run test vtest
 
 help:
 	@echo "make format: format python files"

@@ -19,7 +19,8 @@ COPY . /app
 # install fontforge
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends software-properties-common \
-  && add-apt-repostory ppa:fontforge/fontforge \
+  && add-apt-repository --remove ppa:fontforge/fontforge \
+  && add-apt-repository -y -r ppa:fontforge/fontforge \
   && apt-get update -y \
   && apt-get install -y --no-install-recommends fontforge \
   && apt-get clean \
