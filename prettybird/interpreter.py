@@ -223,6 +223,11 @@ class PrettyBirdInterpreter(Interpreter):
         radius = self._get_num(circle_tree.children[1])
         self.add_instruction("circle", [center, radius])
 
+    def square_step(self, square_tree):
+        left_top = self._get_point(square_tree.children[0])
+        side_length = self._get_num(square_tree.children[1])
+        self.current_symbol.add_instruction("square", [left_top, side_length])
+
     def ellipse_step(self, ellipse_tree):
         p1, p2 = None, None
         if type(ellipse_tree.children[1]) == Token:

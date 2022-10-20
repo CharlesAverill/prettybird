@@ -17,6 +17,11 @@ RUN poetry config virtualenvs.create false && \
 COPY . /app
 
 # install fontforge
-RUN sudo apt-get install -y software-properties-common;
-RUN sudo add-apt-repository ppa:fontforge/fontforge;
-RUN sudo apt-get update -y; sudo apt-get install fontforge -y;
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends software-properties-common \
+  && add-apt-repository --remove ppa:fontforge/fontforge \
+  && add-apt-repository -y -r ppa:fontforge/fontforge \
+  && apt-get update -y \
+  && apt-get install -y --no-install-recommends fontforge \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
