@@ -191,3 +191,6 @@ class PrettyBirdInterpreter(Interpreter):
             p1 = self._get_point(ellipse_tree.children[0])
             p2 = self._get_point(ellipse_tree.children[1])
         self.current_symbol.add_instruction("ellipse", [p1, p2])
+
+    def bezier_step(self, bezier_tree):
+        pass

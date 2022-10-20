@@ -359,6 +359,9 @@ class Symbol:
                 left_point, right_point = (left_x, y), (right_x, y)
                 self.vector(draw_mode, fill_mode, [left_point, right_point])
 
+    def bezier_curve(self, draw_mode, fill_mode, inputs: List[tuple[int, int]]):
+        pass
+
     def __str__(self) -> str:
         return self.get_grid()
 

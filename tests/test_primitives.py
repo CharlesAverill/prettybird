@@ -143,3 +143,7 @@ char a {
         print(str(symbol))
     achieved = "".join(compiled_symbols)
     assert expected == achieved
+
+
+def test_bezier_curve():
+    pass
