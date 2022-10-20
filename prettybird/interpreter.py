@@ -243,7 +243,8 @@ class PrettyBirdInterpreter(Interpreter):
         function_parameters = self.function_call_parameters(
             function_call_tree.children[1])
         self.prepare_instruction(False, False)
-        self.add_instruction("function_call", [self.functions[function_name], function_parameters])
+        self.add_instruction(
+            "function_call", [self.functions[function_name], function_parameters])
 
     def function_call_parameters(self, function_params_tree):
         if type(function_params_tree) == Token:
