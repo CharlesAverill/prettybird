@@ -1,3 +1,6 @@
+from copy import deepcopy
+
+
 class Function:
     def __init__(self, function_name, parameter_names, statements_tree):
         self.function_name = function_name
@@ -48,12 +51,22 @@ class Function:
             raise TypeError(
                 f"{self.function_name} missing arguments {self.parameter_names[len(arguments):]}")
 
-        for instruction in self.instructions:
+        for orig_instruction in self.instructions:
+            instruction = deepcopy(orig_instruction)
+            if instruction[0] == "function_call" and instruction[3][0].function_name == self.function_name:
+                raise NotImplementedError("Recursion not yet supported!")
             # Prepare instructions by subsituting parameter names for arguments
+            # TODO : This is so slow LOL
             for param_index, param_name in enumerate(self.parameter_names):
                 for i in range(len(instruction[3])):
                     if instruction[3][i] == param_name:
                         instruction[3][i] = arguments[param_index]
+                    elif type(instruction[3][i]) in (list, tuple):
+                        new_vers = list(instruction[3][i])
+                        for j in range(len(new_vers)):
+                            if new_vers[j] == param_name:
+                                new_vers[j] = arguments[param_index]
+                        instruction[3][i] = new_vers
             # Add instructions to subspace
             subspace.prepare_instruction(instruction[1], instruction[2])
             subspace.add_instruction(instruction[0], instruction[3])

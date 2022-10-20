@@ -8,16 +8,15 @@ Target is
 ..0000..
 */
 
-/*
 define draw_bottom_line(max_x, max_y) {
     draw vector((0, max_y), (max_x, max_y))
 }
-*/
 
 define figure_eight(left_center, right_center, radius) {
     draw circle(left_center, radius)
     draw circle(right_center, radius)
-    //draw_bottom_line(7, 11)
+    draw_bottom_line(7, 11)
+    //figure_eight(left_center, right_center, radius)
 }
 
 // the compiler will accept identifiers of length > 1, but it is undefined behavior
@@ -109,5 +108,6 @@ char 8 {
 
     steps {
         figure_eight((3, 3), (3, 7), 2)
+        //figure_eight((3, 3), (3, 7), 3)
     }
 }

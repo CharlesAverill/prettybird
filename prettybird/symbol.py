@@ -401,7 +401,6 @@ class Symbol:
         function_inputs = inputs[1]
         function_subspace = function.compile(
             self.width, self.height, function_inputs)
-        print(function_subspace)
         self._logical_or_bitmap(function_subspace)
 
     def grid_hex_repr(self):

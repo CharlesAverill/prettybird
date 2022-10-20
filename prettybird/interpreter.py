@@ -26,8 +26,6 @@ class PrettyBirdInterpreter(Interpreter):
             self.current_function.prepare_instruction(update_mode, fill_mode)
 
     def add_instruction(self, name, data):
-        print(self.current_symbol is None,
-              self.current_function is None, name, data)
         if self.current_symbol is not None:
             self.current_symbol.add_instruction(name, data)
         elif self.current_function is not None:
@@ -150,10 +148,10 @@ class PrettyBirdInterpreter(Interpreter):
         self.current_symbol = None
         self.current_function = Function(
             function_name, function_parameter_names, function_def_tree.children[2])
+        self.functions[function_name] = self.current_function
 
         self.visit(function_def_tree.children[2])
 
-        self.functions[function_name] = self.current_function
         self.current_function = None
 
     def function_parameter_list(self, function_params_tree):
@@ -245,21 +243,22 @@ class PrettyBirdInterpreter(Interpreter):
         function_parameters = self.function_call_parameters(
             function_call_tree.children[1])
         self.prepare_instruction(False, False)
-        self.current_symbol.add_instruction(
-            "function_call", [self.functions[function_name], function_parameters])
+        self.add_instruction("function_call", [self.functions[function_name], function_parameters])
 
     def function_call_parameters(self, function_params_tree):
         if type(function_params_tree) == Token:
             return [function_params_tree.value]
         if not len(function_params_tree.children):
             return []
-        out = [self.parse_type(function_params_tree.children[0])]
+        out = [self.type(function_params_tree.children[0])]
         if len(function_params_tree.children) > 1:
             out += self.visit(function_params_tree.children[1])
         return out
 
-    def parse_type(self, type_tree_or_token):
+    def type(self, type_tree_or_token):
         if (type(type_tree_or_token) == Tree):
             return self._get_point(type_tree_or_token)
         else:
+            if type_tree_or_token.type == "CNAME":
+                return type_tree_or_token.value
             return int(type_tree_or_token.value)

@@ -57,12 +57,12 @@ square_step: "square" "(" point_type "," int_type ")"
 rectangle_step: "rectangle" "(" point_type "," int_type "," int_type ")"
 
 function_call_step: CNAME "(" [function_call_parameters] ")"
-function_call_parameters: literal "," function_call_parameters
-                        | literal
+function_call_parameters: type "," function_call_parameters
+                        | type
 
-point: "(" INT "," INT ")"
+point: "(" int_type "," int_type ")"
 
-?type: point_type | int_type -> parse_type
+?type: point_type | int_type
 ?point_type: point | CNAME
 ?int_type: INT | CNAME
 ?literal: point | INT
