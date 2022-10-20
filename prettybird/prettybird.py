@@ -21,8 +21,8 @@ def get_args():
     parser.add_argument(
         "--format",
         "-f",
-        default="BDF",
-        help="Format to convert to. Supported: [BDF, TTF]",
+        default="TTF",
+        help="Format to convert to. Supported: [BDF, SVG, TTF]",
         type=str,
     )
     parser.add_argument(
@@ -36,7 +36,7 @@ def get_args():
         "--stdout",
         default=False,
         action="store_true",
-        help="Print compiled characters' IR to stdout",
+        help="Print compiled glyph IR to stdout",
     )
 
     return parser.parse_args()

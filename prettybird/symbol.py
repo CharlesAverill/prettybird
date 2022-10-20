@@ -1,6 +1,8 @@
 import math
 from typing import List
 
+# from .function import Function
+
 
 class Symbol:
     def __init__(self, identifier, encoding):
@@ -176,7 +178,7 @@ class Symbol:
         """
         if self._instruction_buffer != ():
             raise ValueError(
-                f'Symbol "{self.identifier}" was told to prepare an instruction, but it has not finished parsing the current function!'
+                f'Symbol "{self.identifier}" tried to prepare an instruction, the current function has not finished parsing! Buffer {self._instruction_buffer}'
             )
         self._instruction_buffer = (draw_mode, fill_mode)
 
@@ -216,7 +218,7 @@ class Symbol:
                 raise NameError(
                     f'Received bad instruction "{instruction_name}"')
             INSTRUCTIONS_MAP[instruction_name](self,
-                draw_mode, fill_mode, inputs)
+                                               draw_mode, fill_mode, inputs)
 
     def point(self, draw_mode, fill_mode, inputs):
         draw_char = self.get_draw_char(draw_mode)
@@ -387,6 +389,21 @@ class Symbol:
             y0 += 1
             y1 -= 1
 
+    def _logical_or_bitmap(self, new_bitmap):
+        for i in range(self.width):
+            for j in range(self.height):
+                p = self.point_to_index((i, j))
+                if new_bitmap[p] == "0":
+                    self._replace_in_grid("0", (i, j))
+
+    def function_call(self, _draw_mode, _fill_mode, inputs):
+        function = inputs[0]
+        function_inputs = inputs[1]
+        function_subspace = function.compile(
+            self.width, self.height, function_inputs)
+        print(function_subspace)
+        self._logical_or_bitmap(function_subspace)
+
     def grid_hex_repr(self):
         out = ""
         bitstring = self.grid.replace("0", "1").replace(".", "0")
@@ -428,12 +445,11 @@ class Symbol:
         return out
 
 
-
-
 INSTRUCTIONS_MAP = {
     "point": Symbol.point,
     "vector": Symbol.vector,
     "circle": Symbol.circle,
     "ellipse": Symbol.ellipse,
     "from_char": Symbol._init_grid_from_symbol,
+    "function_call": Symbol.function_call
 }

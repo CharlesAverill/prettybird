@@ -1,4 +1,3 @@
-from turtle import circle
 from lark.lexer import Token
 from lark.tree import Tree
 from lark.visitors import Interpreter
@@ -19,14 +18,16 @@ class PrettyBirdInterpreter(Interpreter):
     def setup_character_declaration(self):
         """Initialize values for character declaration statements"""
         self.current_symbol = None
-    
+
     def prepare_instruction(self, update_mode, fill_mode):
         if self.current_symbol is not None:
             self.current_symbol.prepare_instruction(update_mode, fill_mode)
         elif self.current_function is not None:
             self.current_function.prepare_instruction(update_mode, fill_mode)
-    
+
     def add_instruction(self, name, data):
+        print(self.current_symbol is None,
+              self.current_function is None, name, data)
         if self.current_symbol is not None:
             self.current_symbol.add_instruction(name, data)
         elif self.current_function is not None:
@@ -150,7 +151,7 @@ class PrettyBirdInterpreter(Interpreter):
         self.current_function = Function(
             function_name, function_parameter_names, function_def_tree.children[2])
 
-        # self.visit(function_def_tree.children[2])
+        self.visit(function_def_tree.children[2])
 
         self.functions[function_name] = self.current_function
         self.current_function = None
@@ -167,14 +168,6 @@ class PrettyBirdInterpreter(Interpreter):
         if len(function_params_tree.children) > 1:
             out += self.visit(function_params_tree.children[1])
         return out
-    
-    def function_call_step(self, function_call_tree):
-        function_name = function_call_tree.children[0].value
-        if function_name not in self.functions:
-            raise NameError(f"Undeclared function \"{function_name}\"")
-        
-        function_params = []
-        pass
 
     def steps_statements(self, statements_tree):
         """Parse a set of steps statements
@@ -188,7 +181,6 @@ class PrettyBirdInterpreter(Interpreter):
         update_mode = None
         fill_mode = None
         # half_mode = None
-        # print(statement_tree.children)
         for child in statement_tree.children:
             if type(child) == Token:
                 if update_mode is None:
@@ -198,14 +190,25 @@ class PrettyBirdInterpreter(Interpreter):
                     # Either "filled" or nothing
                     fill_mode = child.value
             elif type(child) == Tree:
-                self.prepare_instruction(update_mode, fill_mode is not None)
+                if child.data != "function_call_step":
+                    self.prepare_instruction(
+                        update_mode, fill_mode is not None)
                 self.visit(child)
             else:
                 raise TypeError(
                     f"Unexpected type {type(child)} in step_statement")
 
-    def _get_point(self, point_tree):
-        return (int(point_tree.children[0]), int(point_tree.children[1]))
+    def _get_point(self, point_tree_or_token):
+        if type(point_tree_or_token) == Tree:
+            return (self._get_num(point_tree_or_token.children[0]), self._get_num(point_tree_or_token.children[1]))
+        else:
+            return str(point_tree_or_token)
+
+    def _get_num(self, num_token):
+        if num_token.type == "CNAME":
+            return str(num_token)
+        else:
+            return int(num_token.value)
 
     def point_step(self, point_tree):
         self.add_instruction(
@@ -219,18 +222,44 @@ class PrettyBirdInterpreter(Interpreter):
 
     def circle_step(self, circle_tree):
         center = self._get_point(circle_tree.children[0])
-        radius = int(circle_tree.children[1])
+        radius = self._get_num(circle_tree.children[1])
         self.add_instruction("circle", [center, radius])
 
     def ellipse_step(self, ellipse_tree):
         p1, p2 = None, None
         if type(ellipse_tree.children[1]) == Token:
             center = self._get_point(ellipse_tree.children[0])
-            width = int(ellipse_tree.children[1])
-            height = int(ellipse_tree.children[2])
+            width = self._get_num(ellipse_tree.children[1])
+            height = self._get_num(ellipse_tree.children[2])
             p1 = (center[0] - int(width / 2), center[1] - int(height / 2))
             p2 = (center[0] + int(width / 2), center[1] + int(height / 2))
         else:
             p1 = self._get_point(ellipse_tree.children[0])
             p2 = self._get_point(ellipse_tree.children[1])
         self.add_instruction("ellipse", [p1, p2])
+
+    def function_call_step(self, function_call_tree):
+        function_name = function_call_tree.children[0].value
+        if function_name not in self.functions:
+            raise NameError(f"Undeclared function \"{function_name}\"")
+        function_parameters = self.function_call_parameters(
+            function_call_tree.children[1])
+        self.prepare_instruction(False, False)
+        self.current_symbol.add_instruction(
+            "function_call", [self.functions[function_name], function_parameters])
+
+    def function_call_parameters(self, function_params_tree):
+        if type(function_params_tree) == Token:
+            return [function_params_tree.value]
+        if not len(function_params_tree.children):
+            return []
+        out = [self.parse_type(function_params_tree.children[0])]
+        if len(function_params_tree.children) > 1:
+            out += self.visit(function_params_tree.children[1])
+        return out
+
+    def parse_type(self, type_tree_or_token):
+        if (type(type_tree_or_token) == Tree):
+            return self._get_point(type_tree_or_token)
+        else:
+            return int(type_tree_or_token.value)

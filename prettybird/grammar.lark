@@ -62,7 +62,7 @@ function_call_parameters: literal "," function_call_parameters
 
 point: "(" INT "," INT ")"
 
-?type: point_type | int_type
+?type: point_type | int_type -> parse_type
 ?point_type: point | CNAME
 ?int_type: INT | CNAME
 ?literal: point | INT
