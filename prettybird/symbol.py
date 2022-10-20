@@ -474,6 +474,7 @@ INSTRUCTIONS_MAP = {
     "point": Symbol.point,
     "vector": Symbol.vector,
     "circle": Symbol.circle,
+    "square": Symbol.square,
     "ellipse": Symbol.ellipse,
     "from_char": Symbol._init_grid_from_symbol,
     "function_call": Symbol.function_call

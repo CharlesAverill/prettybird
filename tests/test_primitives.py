@@ -31,7 +31,7 @@ char s {
 0......0
 00000000"""
     compiled_symbols = []
-    for symbol in interpreter.symbols_dict.values():
+    for symbol in interpreter.symbols.values():
         symbol.compile()
         compiled_symbols.append(str(symbol))
         print(str(symbol))
@@ -67,7 +67,7 @@ char f {
 .00000000.
 .........."""
     compiled_symbols = []
-    for symbol in interpreter.symbols_dict.values():
+    for symbol in interpreter.symbols.values():
         symbol.compile()
         compiled_symbols.append(str(symbol))
         print(str(symbol))
@@ -104,7 +104,7 @@ char o {
 .00000..
 ..000..."""
     compiled_symbols = []
-    for symbol in interpreter.symbols_dict.values():
+    for symbol in interpreter.symbols.values():
         symbol.compile()
         compiled_symbols.append(str(symbol))
         print(str(symbol))
@@ -137,7 +137,7 @@ char a {
 .....0..
 ..0000.."""
     compiled_symbols = []
-    for symbol in interpreter.symbols_dict.values():
+    for symbol in interpreter.symbols.values():
         symbol.compile()
         compiled_symbols.append(str(symbol))
         print(str(symbol))
