@@ -1,0 +1,13 @@
+define func(p) {
+    draw filled circle(2 + p, 2)
+}
+
+char a {
+    base {
+        blank(8, 12)
+    }
+
+    steps {
+        func((2, 2))
+    }
+}

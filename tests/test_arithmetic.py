@@ -56,7 +56,7 @@ char o {
     }
 
     steps {
-        draw filled circle ((3, 3), (1 + 1) * 2 - 2)
+        draw filled circle (2 + (1, 1), (1 + 1) * 2 - 2)
     }
 }
     """

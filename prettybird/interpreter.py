@@ -204,23 +204,32 @@ class PrettyBirdInterpreter(Interpreter):
 
     def _get_point(self, point_tree_or_token):
         if type(point_tree_or_token) == Tree:
-            return (
-                self._get_num(point_tree_or_token.children[0]),
-                self._get_num(point_tree_or_token.children[1]),
-            )
+            if "expr" in point_tree_or_token.data:
+                return self.visit(point_tree_or_token)
+            if len(point_tree_or_token.children) == 2:
+                return (
+                    self._get_num(point_tree_or_token.children[0]),
+                    self._get_num(point_tree_or_token.children[1]),
+                )
+            elif len(point_tree_or_token.children) == 1:
+                return str(point_tree_or_token.children[0].value)
         else:
             return str(point_tree_or_token)
 
     def _get_num(self, num_tree):
         num_token = None
         negative = False
+
         if type(num_tree) == Token:
             num_token = num_tree
         else:
             if "expr" in num_tree.data:
                 return self.visit(num_tree)
-            num_token = num_tree.children[0]
+            num_token = Token("NUMBER", self._get_num(num_tree.children[0]))
+            if type(num_token.value) == str:
+                num_token = Token("CNAME", num_token.value)
             negative = num_tree.data == "negative_int"
+
         if num_token.type == "CNAME":
             return ("-" if negative else "") + str(num_token)
         else:
@@ -282,7 +291,7 @@ class PrettyBirdInterpreter(Interpreter):
         return out
 
     def _expr_simplify(self, to_simplify):
-        if len(to_simplify.shape) > 1:
+        if to_simplify.shape != () and len(to_simplify) > 1:
             return tuple(to_simplify)
         else:
             return float(to_simplify)
@@ -290,7 +299,11 @@ class PrettyBirdInterpreter(Interpreter):
     def add_expr(self, add_tree):
         left = self.type(add_tree.children[0])
         right = self.type(add_tree.children[1])
-        if type(left) == str or type(right) == str:
+        if type(left) not in (int, float, tuple) or type(right) not in (
+            int,
+            float,
+            tuple,
+        ):
             return [lambda x, y: x + y, left, right]
         out = np.array(left) + np.array(right)
         return self._expr_simplify(out)
@@ -298,7 +311,7 @@ class PrettyBirdInterpreter(Interpreter):
     def sub_expr(self, sub_tree):
         left = self.type(sub_tree.children[0])
         right = self.type(sub_tree.children[1])
-        if type(left) == str or type(right) == str:
+        if type(left) not in (int, float) or type(right) not in (int, float):
             return [lambda x, y: x - y, left, right]
         out = np.array(left) - np.array(right)
         return self._expr_simplify(out)
@@ -306,7 +319,7 @@ class PrettyBirdInterpreter(Interpreter):
     def mul_expr(self, mul_tree):
         left = self.type(mul_tree.children[0])
         right = self.type(mul_tree.children[1])
-        if type(left) == str or type(right) == str:
+        if type(left) not in (int, float) or type(right) not in (int, float):
             return [lambda x, y: x * y, left, right]
         out = np.array(left) * np.array(right)
         return self._expr_simplify(out)
@@ -314,7 +327,7 @@ class PrettyBirdInterpreter(Interpreter):
     def div_expr(self, div_tree):
         left = self.type(div_tree.children[0])
         right = self.type(div_tree.children[1])
-        if type(left) == str or type(right) == str:
+        if type(left) not in (int, float) or type(right) not in (int, float):
             return [lambda x, y: x / y, left, right]
         out = np.array(left) / np.array(right)
         return self._expr_simplify(out)
@@ -322,7 +335,7 @@ class PrettyBirdInterpreter(Interpreter):
     def pow_expr(self, pow_tree):
         left = self.type(pow_tree.children[0])
         right = self.type(pow_tree.children[1])
-        if type(left) == str or type(right) == str:
+        if type(left) not in (int, float) or type(right) not in (int, float):
             return [lambda x, y: x**y, left, right]
         out = np.array(left) ** np.array(right)
         return self._expr_simplify(out)
@@ -330,7 +343,7 @@ class PrettyBirdInterpreter(Interpreter):
     def mod_expr(self, mod_tree):
         left = self.type(mod_tree.children[0])
         right = self.type(mod_tree.children[1])
-        if type(left) == str or type(right) == str:
+        if type(left) not in (int, float) or type(right) not in (int, float):
             return [lambda x, y: x % y, left, right]
         out = np.array(left) % np.array(right)
         return self._expr_simplify(out)

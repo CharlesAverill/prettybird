@@ -37,24 +37,24 @@ step_statement: UPDATE_MODE FILLED? HALF? step
      | rectangle_step
 
 // Just this point
-point_step: "point" "(" point_type ")"
+point_step: "point" "(" expression ")"
 
 // Line from first point to second point
-vector_step: "vector" "(" point_type "," point_type ")"
+vector_step: "vector" "(" expression "," expression ")"
 
 // Circle with center at point and with radius NUM
-circle_step: "circle" "(" point_type "," expression ")"
+circle_step: "circle" "(" expression "," expression ")"
 
 // Ellipse with center at point, width NUM, height NUM
 // or an ellipse within the rectangle defined by bottomleft=point, topright=point
-ellipse_step: "ellipse" "(" point_type "," expression "," expression ")"
-            | "ellipse" "(" point_type "," point_type ")"
+ellipse_step: "ellipse" "(" expression "," expression "," expression ")"
+            | "ellipse" "(" expression "," expression ")"
 
 // Square with top left at point and side length NUM
-square_step: "square" "(" point_type "," expression ")"
+square_step: "square" "(" expression "," expression ")"
 
 // Rectangle with top left at point, width NUM, height NUM
-rectangle_step: "rectangle" "(" point_type "," expression "," expression ")"
+rectangle_step: "rectangle" "(" expression "," expression "," expression ")"
 
 function_call_step: CNAME "(" [function_call_parameters] ")"
 function_call_parameters: type "," function_call_parameters
@@ -66,8 +66,8 @@ point: "(" expression "," expression ")"
 
 ?point_type: point | CNAME
 
-?power_expression: number_type
-                 | power_expression "^" number_type -> pow_expr
+?power_expression: (number_type | point)
+                 | power_expression "^" (number_type | point) -> pow_expr
 
 ?multiplicative_expression: power_expression
                           | multiplicative_expression "*" power_expression -> mul_expr

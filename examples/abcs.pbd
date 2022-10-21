@@ -28,7 +28,8 @@ define circle_wrapper(point, radius) {
 }
 
 define add_points(p1, p2) {
-    circle_wrapper(p1 + p2, 3)
+    draw circle(p1 + p2, 3)
+    //circle_wrapper(p1 + p2, 3)
 }
 
 // the compiler will accept identifiers of length > 1, but it is undefined behavior

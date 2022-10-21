@@ -1,4 +1,5 @@
 from copy import deepcopy
+from lark import Tree
 
 import numpy as np
 
@@ -39,6 +40,9 @@ class Function:
         self.instruction_buffer = ()
 
     def _reduce_argument(self, instruction_arg, function_arguments):
+        if type(instruction_arg) == Tree and len(instruction_arg.children) == 1:
+            instruction_arg = instruction_arg.children[0].value
+
         if type(instruction_arg) == str:
             return function_arguments[self.parameter_names.index(instruction_arg)]
         elif type(instruction_arg) in (list, tuple):
@@ -47,7 +51,7 @@ class Function:
                 len(instruction_arg)
                 and repr(type(instruction_arg[0])) == "<class 'function'>"
             ):
-                return instruction_arg[0](
+                x = instruction_arg[0](
                     np.array(
                         self._reduce_argument(
                             instruction_arg[1], function_arguments)
@@ -57,10 +61,12 @@ class Function:
                             instruction_arg[2], function_arguments)
                     ),
                 )
+                return x
             return [
                 self._reduce_argument(arg, function_arguments)
                 for arg in instruction_arg
             ]
+
         return instruction_arg
 
     def compile(self, width, height, arguments):
@@ -85,43 +91,6 @@ class Function:
                 instruction_args[i] = self._reduce_argument(arg, arguments)
             subspace.prepare_instruction(instruction[1], instruction[2])
             subspace.add_instruction(instruction[0], instruction[3])
-        """
-        for orig_instruction in self.instructions:
-            # Don't modify instruction data!
-            instruction = deepcopy(orig_instruction)
-            if instruction[0] == "function_call" and instruction[3][0].function_name == self.function_name:
-                raise NotImplementedError("Recursion not yet supported!")
-            # Prepare instructions by subsituting parameter names for arguments
-            # TODO : This is so slow LOL
-            for param_index, param_name in enumerate(self.parameter_names):
-                for i in range(len(instruction[3])):
-                    negative = False
-                    if type(instruction[3][i]) == str and instruction[3][i].startswith("-"):
-                        negative = True
-                        instruction[3][i] = instruction[3][i][1:]
-
-                    if instruction[3][i] == param_name:
-                        instruction[3][i] = arguments[param_index]
-                        if negative:
-                            instruction[3][i] *= -1
-                    elif type(instruction[3][i]) in (list, tuple):
-                        new_vers = list(instruction[3][i])
-                        for j in range(len(new_vers)):
-                            if type(new_vers[j]) == str and new_vers[j].startswith("-"):
-                                negative = True
-                                new_vers[j] = new_vers[j][1:]
-
-                            if new_vers[j] == param_name:
-                                new_vers[j] = (-1 if negative else 1) * \
-                                    arguments[param_index]
-                        if len(new_vers) == 3 and type(new_vers[0]) == type(self.compile) and all([type(x) != str for x in new_vers[1:]]):
-                            new_vers = new_vers[0](np.array(new_vers[1]), np.array(new_vers[2]))
-                        print(new_vers)
-                        instruction[3][i] = new_vers
-            # Add instructions to subspace
-            subspace.prepare_instruction(instruction[1], instruction[2])
-            subspace.add_instruction(instruction[0], instruction[3])
-        """
 
         subspace.compile()
 
