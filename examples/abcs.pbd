@@ -107,12 +107,11 @@ char 0 {
 
 char 8 {
     base {
-        blank(8, 12)
+        blank(100, 100)
     }
 
     steps {
         figure_eight((3, 3), (3, 7), 2)
-        //figure_eight((3, 3), (3, 7), 3)
     }
 }
 

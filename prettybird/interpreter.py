@@ -213,7 +213,7 @@ class PrettyBirdInterpreter(Interpreter):
         if num_token.type == "CNAME":
             return ("-" if negative else "") + str(num_token)
         else:
-            return (-1 if negative else 1) * int(num_token.value)
+            return (-1 if negative else 1) * float(num_token.value)
 
     def point_step(self, point_tree):
         self.add_instruction(
@@ -241,8 +241,8 @@ class PrettyBirdInterpreter(Interpreter):
             center = self._get_point(ellipse_tree.children[0])
             width = self._get_num(ellipse_tree.children[1])
             height = self._get_num(ellipse_tree.children[2])
-            p1 = (center[0] - int(width / 2), center[1] - int(height / 2))
-            p2 = (center[0] + int(width / 2), center[1] + int(height / 2))
+            p1 = (center[0] - width / 2, center[1] - height / 2)
+            p2 = (center[0] + width / 2, center[1] + height / 2)
         else:
             p1 = self._get_point(ellipse_tree.children[0])
             p2 = self._get_point(ellipse_tree.children[1])
