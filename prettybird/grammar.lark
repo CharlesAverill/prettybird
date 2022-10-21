@@ -32,6 +32,7 @@ step: point_step
     | ellipse_step
     | square_step
     | rectangle_step
+    | bezier_step
 
 // Just this point
 point_step: "point" "(" point ")"
@@ -52,6 +53,8 @@ square_step: "square" "(" point "," INT ")"
 
 // Rectangle with top left at point, width INT, height INT
 rectangle_step: "rectangle" "(" point "," INT "," INT ")"
+
+bezier_step: "bezier" "(" point "," point "," point ")"
 
 point: "(" INT "," INT ")"
 

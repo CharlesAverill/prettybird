@@ -192,5 +192,9 @@ class PrettyBirdInterpreter(Interpreter):
             p2 = self._get_point(ellipse_tree.children[1])
         self.current_symbol.add_instruction("ellipse", [p1, p2])
 
+    # TODO: draw generalized bezier curve
     def bezier_step(self, bezier_tree):
-        pass
+        p0 = self._get_point(bezier_tree.children[0])
+        p1 = self._get_point(bezier_tree.children[1])
+        p2 = self._get_point(bezier_tree.children[2])
+        self.current_symbol.add_instruction("bezier", [p0, p1, p2])
