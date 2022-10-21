@@ -202,11 +202,18 @@ class PrettyBirdInterpreter(Interpreter):
         else:
             return str(point_tree_or_token)
 
-    def _get_num(self, num_token):
-        if num_token.type == "CNAME":
-            return str(num_token)
+    def _get_num(self, num_tree):
+        num_token = None
+        negative = False
+        if type(num_tree) == Token:
+            num_token = num_tree
         else:
-            return int(num_token.value)
+            num_token = num_tree.children[0]
+            negative = num_tree.data == "negative_int"
+        if num_token.type == "CNAME":
+            return ("-" if negative else "") + str(num_token)
+        else:
+            return (-1 if negative else 1) * int(num_token.value)
 
     def point_step(self, point_tree):
         self.add_instruction(
@@ -262,9 +269,9 @@ class PrettyBirdInterpreter(Interpreter):
         return out
 
     def type(self, type_tree_or_token):
-        if (type(type_tree_or_token) == Tree):
+        if (type(type_tree_or_token) == Tree and len(type_tree_or_token.children) > 1):
             return self._get_point(type_tree_or_token)
         else:
-            if type_tree_or_token.type == "CNAME":
+            if type(type_tree_or_token) == Token and type_tree_or_token.type == "CNAME":
                 return type_tree_or_token.value
-            return int(type_tree_or_token.value)
+            return self._get_num(type_tree_or_token)

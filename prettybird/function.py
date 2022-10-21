@@ -52,6 +52,7 @@ class Function:
                 f"{self.function_name} missing arguments {self.parameter_names[len(arguments):]}")
 
         for orig_instruction in self.instructions:
+            # Don't modify instruction data!
             instruction = deepcopy(orig_instruction)
             if instruction[0] == "function_call" and instruction[3][0].function_name == self.function_name:
                 raise NotImplementedError("Recursion not yet supported!")
@@ -59,14 +60,27 @@ class Function:
             # TODO : This is so slow LOL
             for param_index, param_name in enumerate(self.parameter_names):
                 for i in range(len(instruction[3])):
+                    negative = False
+                    if type(instruction[3][i]) == str and instruction[3][i].startswith("-"):
+                        negative = True
+                        instruction[3][i] = instruction[3][i][1:]
+
                     if instruction[3][i] == param_name:
                         instruction[3][i] = arguments[param_index]
+                        if negative:
+                            instruction[3][i] *= -1
                     elif type(instruction[3][i]) in (list, tuple):
                         new_vers = list(instruction[3][i])
                         for j in range(len(new_vers)):
+                            if type(new_vers[j]) == str and new_vers[j].startswith("-"):
+                                negative = True
+                                new_vers[j] = new_vers[j][1:]
+
                             if new_vers[j] == param_name:
-                                new_vers[j] = arguments[param_index]
+                                new_vers[j] = (-1 if negative else 1) * \
+                                    arguments[param_index]
                         instruction[3][i] = new_vers
+                        print(new_vers)
             # Add instructions to subspace
             subspace.prepare_instruction(instruction[1], instruction[2])
             subspace.add_instruction(instruction[0], instruction[3])

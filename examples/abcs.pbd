@@ -19,6 +19,10 @@ define figure_eight(left_center, right_center, radius) {
     //figure_eight(left_center, right_center, radius)
 }
 
+define draw_negative_circle(x, y, r) {
+    draw circle((-x, -y), r)
+}
+
 // the compiler will accept identifiers of length > 1, but it is undefined behavior
 
 // the optional "encoding=INT" behavior explicitly tells the compiler which character this
@@ -109,5 +113,15 @@ char 8 {
     steps {
         figure_eight((3, 3), (3, 7), 2)
         //figure_eight((3, 3), (3, 7), 3)
+    }
+}
+
+char 9 {
+    base {
+        blank(8, 12)
+    }
+
+    steps {
+        draw_negative_circle(2, 2, 4)
     }
 }

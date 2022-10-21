@@ -63,9 +63,11 @@ function_call_parameters: type "," function_call_parameters
 point: "(" int_type "," int_type ")"
 
 ?type: point_type | int_type
+
 ?point_type: point | CNAME
-?int_type: INT | CNAME
-?literal: point | INT
+
+?int_type: (INT | CNAME) -> positive_int
+         | "-" (INT | CNAME) -> negative_int
 
 UPDATE_MODE: ("draw" | "erase")
 
@@ -91,4 +93,3 @@ WHITESPACE: /\s+/
 %import common.INT
 %import common.C_COMMENT
 %import common.DIGIT
-%import common.INT
