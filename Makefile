@@ -11,14 +11,14 @@ help:
 
 format:
 	poetry run black $$(find prettybird -name "*.py");
-	poetry run autopep8 --in-place $$(find prettybird -name "*.py");
+	poetry run autopep8 --in-place $$(find prettybird -name "*.py")
 
 install:
 	poetry install
 	poetry run pre-commit install
 
 lint:
-	poetry run flake8 --ignore=E501,W503 $$(find prettybird -name "*.py");
+	poetry run flake8 --ignore=E501,W503 $$(find prettybird -name "*.py")
 	poetry run mypy .
 
 run:
