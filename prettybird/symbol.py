@@ -1,7 +1,7 @@
 import math
 from typing import List
 
-from numpy import arange
+from .utils import arange
 
 
 class Symbol:

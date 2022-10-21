@@ -1,7 +1,7 @@
 from copy import deepcopy
 from lark import Tree
 
-import numpy as np
+from .utils import Array
 
 
 class Function:
@@ -52,11 +52,11 @@ class Function:
                 and repr(type(instruction_arg[0])) == "<class 'function'>"
             ):
                 x = instruction_arg[0](
-                    np.array(
+                    Array(
                         self._reduce_argument(
                             instruction_arg[1], function_arguments)
                     ),
-                    np.array(
+                    Array(
                         self._reduce_argument(
                             instruction_arg[2], function_arguments)
                     ),
