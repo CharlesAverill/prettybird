@@ -284,7 +284,8 @@ class Symbol:
             (cx - dy, cy - dx),
         ]:
             if self._point_within_grid(point):
-                self._replace_in_grid(draw_char, (int(point[0]), int(point[1])))
+                self._replace_in_grid(
+                    draw_char, (int(point[0]), int(point[1])))
 
     def circle(self, draw_mode, fill_mode, inputs):
         """Draw a vector onto the grid using Bresenham's Circle Generation algorithm
@@ -395,7 +396,8 @@ class Symbol:
             do_while = False
             for point in [(x1, y0), (x0, y0), (x0, y1), (x1, y1)]:
                 if self._point_within_grid(point):
-                    self._replace_in_grid(draw_char, (int(point[0]), int(point[1])))
+                    self._replace_in_grid(
+                        draw_char, (int(point[0]), int(point[1])))
             e2 = 2 * err
             if e2 <= dy:
                 y0 += 1

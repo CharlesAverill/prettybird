@@ -43,31 +43,46 @@ point_step: "point" "(" point_type ")"
 vector_step: "vector" "(" point_type "," point_type ")"
 
 // Circle with center at point and with radius NUM
-circle_step: "circle" "(" point_type "," number_type ")"
+circle_step: "circle" "(" point_type "," expression ")"
 
 // Ellipse with center at point, width NUM, height NUM
 // or an ellipse within the rectangle defined by bottomleft=point, topright=point
-ellipse_step: "ellipse" "(" point_type "," number_type "," number_type ")"
+ellipse_step: "ellipse" "(" point_type "," expression "," expression ")"
             | "ellipse" "(" point_type "," point_type ")"
 
 // Square with top left at point and side length NUM
-square_step: "square" "(" point_type "," number_type ")"
+square_step: "square" "(" point_type "," expression ")"
 
 // Rectangle with top left at point, width NUM, height NUM
-rectangle_step: "rectangle" "(" point_type "," number_type "," number_type ")"
+rectangle_step: "rectangle" "(" point_type "," expression "," expression ")"
 
 function_call_step: CNAME "(" [function_call_parameters] ")"
 function_call_parameters: type "," function_call_parameters
                         | type
 
-point: "(" number_type "," number_type ")"
+point: "(" expression "," expression ")"
 
-?type: point_type | number_type
+?type: point_type | expression
 
 ?point_type: point | CNAME
 
+?power_expression: number_type
+                 | power_expression "^" number_type -> pow_expr
+
+?multiplicative_expression: power_expression
+                          | multiplicative_expression "*" power_expression -> mul_expr
+                          | multiplicative_expression "/" power_expression -> div_expr
+                          | multiplicative_expression "%" power_expression -> mod_expr
+
+?additive_expression: multiplicative_expression
+                    | additive_expression "+" multiplicative_expression -> add_expr
+                    | additive_expression "-" multiplicative_expression -> sub_expr
+
+?expression: additive_expression
+
 ?number_type: (NUMBER | CNAME) -> positive_int
             | "-" (NUMBER | CNAME) -> negative_int
+            | "(" expression ")"
 
 UPDATE_MODE: ("draw" | "erase")
 

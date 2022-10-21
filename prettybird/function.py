@@ -80,7 +80,6 @@ class Function:
                                 new_vers[j] = (-1 if negative else 1) * \
                                     arguments[param_index]
                         instruction[3][i] = new_vers
-                        print(new_vers)
             # Add instructions to subspace
             subspace.prepare_instruction(instruction[1], instruction[2])
             subspace.add_instruction(instruction[0], instruction[3])

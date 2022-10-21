@@ -208,6 +208,8 @@ class PrettyBirdInterpreter(Interpreter):
         if type(num_tree) == Token:
             num_token = num_tree
         else:
+            if "expr" in num_tree.data:
+                return self.visit(num_tree)
             num_token = num_tree.children[0]
             negative = num_tree.data == "negative_int"
         if num_token.type == "CNAME":
@@ -268,9 +270,44 @@ class PrettyBirdInterpreter(Interpreter):
             out += self.visit(function_params_tree.children[1])
         return out
 
+    def add_expr(self, add_tree):
+        left = self.type(add_tree.children[0])
+        right = self.type(add_tree.children[1])
+        return left + right
+
+    def sub_expr(self, sub_tree):
+        left = self.type(sub_tree.children[0])
+        right = self.type(sub_tree.children[1])
+        return left - right
+
+    def mul_expr(self, mul_tree):
+        left = self.type(mul_tree.children[0])
+        right = self.type(mul_tree.children[1])
+        return left * right
+
+    def div_expr(self, div_tree):
+        left = self.type(div_tree.children[0])
+        right = self.type(div_tree.children[1])
+        return left / right
+
+    def pow_expr(self, pow_tree):
+        left = self.type(pow_tree.children[0])
+        right = self.type(pow_tree.children[1])
+        return left ** right
+
+    def mod_expr(self, mod_tree):
+        left = self.type(mod_tree.children[0])
+        right = self.type(mod_tree.children[1])
+        return left % right
+
     def type(self, type_tree_or_token):
-        if (type(type_tree_or_token) == Tree and len(type_tree_or_token.children) > 1):
-            return self._get_point(type_tree_or_token)
+        if type(type_tree_or_token) == Tree:
+            if "expr" in type_tree_or_token.data:
+                return self.visit(type_tree_or_token)
+            elif len(type_tree_or_token.children) > 1:
+                return self._get_point(type_tree_or_token)
+            else:
+                return self.type(type_tree_or_token.children[0])
         else:
             if type(type_tree_or_token) == Token and type_tree_or_token.type == "CNAME":
                 return type_tree_or_token.value
