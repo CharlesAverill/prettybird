@@ -217,8 +217,8 @@ class Symbol:
             if instruction_name not in INSTRUCTIONS_MAP:
                 raise NameError(
                     f'Received bad instruction "{instruction_name}"')
-            INSTRUCTIONS_MAP[instruction_name](self,
-                                               draw_mode, fill_mode, inputs)
+            INSTRUCTIONS_MAP[instruction_name](
+                self, draw_mode, fill_mode, inputs)
 
     def point(self, draw_mode, fill_mode, inputs):
         draw_char = self.get_draw_char(draw_mode)
@@ -342,7 +342,10 @@ class Symbol:
         [left_x, top_y] = top_left
         right_x, bottom_y = left_x + side_length - 1, top_y + side_length - 1
         top_right, bottom_left, bottom_right = (
-            right_x, top_y), (left_x, bottom_y), (right_x, bottom_y)
+            (right_x, top_y),
+            (left_x, bottom_y),
+            (right_x, bottom_y),
+        )
         self.vector(draw_mode, fill_mode, [top_left, top_right])
         self.vector(draw_mode, fill_mode, [top_left, bottom_left])
         self.vector(draw_mode, fill_mode, [bottom_right, top_right])
@@ -368,7 +371,9 @@ class Symbol:
             h, k = x0 + a / 2, y0 + b / 2
             for x in arange(x0, x1 + 1, 1):
                 for y in arange(y0, y1 + 1, 1):
-                    if (((x - h) ** 2) / (a * a / 4)) + (((y - k) ** 2) / (b * b / 4)) <= 1:
+                    if (((x - h) ** 2) / (a * a / 4)) + (
+                        ((y - k) ** 2) / (b * b / 4)
+                    ) <= 1:
                         if self._point_within_grid((x, y)):
                             self._replace_in_grid(draw_char, (int(x), int(y)))
 
@@ -479,5 +484,5 @@ INSTRUCTIONS_MAP = {
     "square": Symbol.square,
     "ellipse": Symbol.ellipse,
     "from_char": Symbol._init_grid_from_symbol,
-    "function_call": Symbol.function_call
+    "function_call": Symbol.function_call,
 }

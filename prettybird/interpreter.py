@@ -6,6 +6,8 @@ from .symbol import Symbol
 from .function import Function
 from .utils.string_utils import get_empty_grid
 
+import numpy as np
+
 
 class PrettyBirdInterpreter(Interpreter):
     def __init__(self):
@@ -66,7 +68,10 @@ class PrettyBirdInterpreter(Interpreter):
         identifier_name = identifier_token.value
 
         encoding_value = None
-        if type(declaration_tree.children[1]) == Token and declaration_tree.children[1].type == "INT":
+        if (
+            type(declaration_tree.children[1]) == Token
+            and declaration_tree.children[1].type == "INT"
+        ):
             encoding_value = declaration_tree.children[1]
         if encoding_value is None:
             encoding_value = ord(identifier_name)
@@ -75,8 +80,7 @@ class PrettyBirdInterpreter(Interpreter):
         if identifier_name in self.symbols:
             raise NameError(f'Identifier "{identifier_name}" already exists')
 
-        self.symbols[identifier_name] = Symbol(
-            identifier_name, encoding_value)
+        self.symbols[identifier_name] = Symbol(identifier_name, encoding_value)
 
         self.current_symbol = self.symbols[identifier_name]
         self.current_function = None
@@ -139,7 +143,8 @@ class PrettyBirdInterpreter(Interpreter):
         from_identifier = character_base_tree.children[0].value
         self.current_symbol.prepare_instruction("draw", False)
         self.current_symbol.add_instruction(
-            "from_char", [self.get_symbol(from_identifier)])
+            "from_char", [self.get_symbol(from_identifier)]
+        )
 
     def function_definition(self, function_def_tree):
         function_name = function_def_tree.children[0].value
@@ -147,7 +152,8 @@ class PrettyBirdInterpreter(Interpreter):
 
         self.current_symbol = None
         self.current_function = Function(
-            function_name, function_parameter_names, function_def_tree.children[2])
+            function_name, function_parameter_names, function_def_tree.children[2]
+        )
         self.functions[function_name] = self.current_function
 
         self.visit(function_def_tree.children[2])
@@ -198,7 +204,10 @@ class PrettyBirdInterpreter(Interpreter):
 
     def _get_point(self, point_tree_or_token):
         if type(point_tree_or_token) == Tree:
-            return (self._get_num(point_tree_or_token.children[0]), self._get_num(point_tree_or_token.children[1]))
+            return (
+                self._get_num(point_tree_or_token.children[0]),
+                self._get_num(point_tree_or_token.children[1]),
+            )
         else:
             return str(point_tree_or_token)
 
@@ -224,8 +233,7 @@ class PrettyBirdInterpreter(Interpreter):
     def vector_step(self, vector_tree):
         first_point = self._get_point(vector_tree.children[0])
         second_point = self._get_point(vector_tree.children[1])
-        self.add_instruction(
-            "vector", [first_point, second_point])
+        self.add_instruction("vector", [first_point, second_point])
 
     def circle_step(self, circle_tree):
         center = self._get_point(circle_tree.children[0])
@@ -253,12 +261,15 @@ class PrettyBirdInterpreter(Interpreter):
     def function_call_step(self, function_call_tree):
         function_name = function_call_tree.children[0].value
         if function_name not in self.functions:
-            raise NameError(f"Undeclared function \"{function_name}\"")
+            raise NameError(f'Undeclared function "{function_name}"')
         function_parameters = self.function_call_parameters(
-            function_call_tree.children[1])
+            function_call_tree.children[1]
+        )
         self.prepare_instruction(False, False)
         self.add_instruction(
-            "function_call", [self.functions[function_name], function_parameters])
+            "function_call", [
+                self.functions[function_name], function_parameters]
+        )
 
     def function_call_parameters(self, function_params_tree):
         if type(function_params_tree) == Token:
@@ -270,35 +281,59 @@ class PrettyBirdInterpreter(Interpreter):
             out += self.visit(function_params_tree.children[1])
         return out
 
+    def _expr_simplify(self, to_simplify):
+        if len(to_simplify.shape) > 1:
+            return tuple(to_simplify)
+        else:
+            return float(to_simplify)
+
     def add_expr(self, add_tree):
         left = self.type(add_tree.children[0])
         right = self.type(add_tree.children[1])
-        return left + right
+        if type(left) == str or type(right) == str:
+            return [lambda x, y: x + y, left, right]
+        out = np.array(left) + np.array(right)
+        return self._expr_simplify(out)
 
     def sub_expr(self, sub_tree):
         left = self.type(sub_tree.children[0])
         right = self.type(sub_tree.children[1])
-        return left - right
+        if type(left) == str or type(right) == str:
+            return [lambda x, y: x - y, left, right]
+        out = np.array(left) - np.array(right)
+        return self._expr_simplify(out)
 
     def mul_expr(self, mul_tree):
         left = self.type(mul_tree.children[0])
         right = self.type(mul_tree.children[1])
-        return left * right
+        if type(left) == str or type(right) == str:
+            return [lambda x, y: x * y, left, right]
+        out = np.array(left) * np.array(right)
+        return self._expr_simplify(out)
 
     def div_expr(self, div_tree):
         left = self.type(div_tree.children[0])
         right = self.type(div_tree.children[1])
-        return left / right
+        if type(left) == str or type(right) == str:
+            return [lambda x, y: x / y, left, right]
+        out = np.array(left) / np.array(right)
+        return self._expr_simplify(out)
 
     def pow_expr(self, pow_tree):
         left = self.type(pow_tree.children[0])
         right = self.type(pow_tree.children[1])
-        return left ** right
+        if type(left) == str or type(right) == str:
+            return [lambda x, y: x**y, left, right]
+        out = np.array(left) ** np.array(right)
+        return self._expr_simplify(out)
 
     def mod_expr(self, mod_tree):
         left = self.type(mod_tree.children[0])
         right = self.type(mod_tree.children[1])
-        return left % right
+        if type(left) == str or type(right) == str:
+            return [lambda x, y: x % y, left, right]
+        out = np.array(left) % np.array(right)
+        return self._expr_simplify(out)
 
     def type(self, type_tree_or_token):
         if type(type_tree_or_token) == Tree:

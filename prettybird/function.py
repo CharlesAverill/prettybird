@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+import numpy as np
+
 
 class Function:
     def __init__(self, function_name, parameter_names, statements_tree):
@@ -36,6 +38,31 @@ class Function:
             (instruction_name, *self.instruction_buffer, inputs))
         self.instruction_buffer = ()
 
+    def _reduce_argument(self, instruction_arg, function_arguments):
+        if type(instruction_arg) == str:
+            return function_arguments[self.parameter_names.index(instruction_arg)]
+        elif type(instruction_arg) in (list, tuple):
+            # Expression
+            if (
+                len(instruction_arg)
+                and repr(type(instruction_arg[0])) == "<class 'function'>"
+            ):
+                return instruction_arg[0](
+                    np.array(
+                        self._reduce_argument(
+                            instruction_arg[1], function_arguments)
+                    ),
+                    np.array(
+                        self._reduce_argument(
+                            instruction_arg[2], function_arguments)
+                    ),
+                )
+            return [
+                self._reduce_argument(arg, function_arguments)
+                for arg in instruction_arg
+            ]
+        return instruction_arg
+
     def compile(self, width, height, arguments):
         # Local imports because Symbol needs to import Function
         from .symbol import Symbol
@@ -43,14 +70,22 @@ class Function:
 
         # Setup function subspace
         subspace = Symbol(f"{self.function_name}_subspace", 0)
-        subspace.grid = get_empty_grid(
-            int(width), int(height)
-        )
+        subspace.grid = get_empty_grid(int(width), int(height))
 
         if len(arguments) != len(self.parameter_names):
             raise TypeError(
-                f"{self.function_name} missing arguments {self.parameter_names[len(arguments):]}")
+                f"{self.function_name} missing arguments {self.parameter_names[len(arguments):]}"
+            )
 
+        for orig_instruction in self.instructions:
+            # Don't modify instruction data!
+            instruction = deepcopy(orig_instruction)
+            instruction_args = instruction[3]
+            for i, arg in enumerate(instruction_args):
+                instruction_args[i] = self._reduce_argument(arg, arguments)
+            subspace.prepare_instruction(instruction[1], instruction[2])
+            subspace.add_instruction(instruction[0], instruction[3])
+        """
         for orig_instruction in self.instructions:
             # Don't modify instruction data!
             instruction = deepcopy(orig_instruction)
@@ -79,10 +114,14 @@ class Function:
                             if new_vers[j] == param_name:
                                 new_vers[j] = (-1 if negative else 1) * \
                                     arguments[param_index]
+                        if len(new_vers) == 3 and type(new_vers[0]) == type(self.compile) and all([type(x) != str for x in new_vers[1:]]):
+                            new_vers = new_vers[0](np.array(new_vers[1]), np.array(new_vers[2]))
+                        print(new_vers)
                         instruction[3][i] = new_vers
             # Add instructions to subspace
             subspace.prepare_instruction(instruction[1], instruction[2])
             subspace.add_instruction(instruction[0], instruction[3])
+        """
 
         subspace.compile()
 

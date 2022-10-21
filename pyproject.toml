@@ -12,6 +12,7 @@ pathlib = "^1.0.1"
 python = "^3.9"
 svgwrite = "^1.4.3"
 numpy = "^1.23.4"
+black = "^22.10.0"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.7.0"
