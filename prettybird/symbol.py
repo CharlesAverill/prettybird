@@ -112,7 +112,7 @@ class Symbol:
         self._height += 1
         self._parsed_base = True
 
-    def _point_within_grid(self, point):
+    def _point_within_grid(self, point: tuple[int, int]):
         """Determine whether or not a point lies within the grid
 
         Args:
@@ -128,7 +128,7 @@ class Symbol:
             and point[1] < self._height
         )
 
-    def point_to_index(self, point):
+    def point_to_index(self, point: tuple[int, int]):
         return (self._width + 1) * point[1] + point[0]
 
     def _replace_in_grid(self, new_character, point):
@@ -220,12 +220,12 @@ class Symbol:
             INSTRUCTIONS_MAP[instruction_name](
                 self, draw_mode, fill_mode, inputs)
 
-    def point(self, draw_mode, fill_mode, inputs):
+    def point(self, draw_mode, fill_mode, inputs: list[tuple[int, int]]):
         draw_char = self.get_draw_char(draw_mode)
         if self._point_within_grid(inputs[0]):
             self._replace_in_grid(draw_char, inputs[0])
 
-    def vector(self, draw_mode, fill_mode, inputs):
+    def vector(self, draw_mode, fill_mode, inputs: list[tuple[int, int]]):
         """Draw a vector onto the grid using Bresenham's Line Generation algorithm
 
         Args:
@@ -356,6 +356,67 @@ class Symbol:
                 left_point, right_point = (left_x, y), (right_x, y)
                 self.vector(draw_mode, fill_mode, [left_point, right_point])
 
+    def bezier(self, draw_mode, _, inputs: list[tuple[int, int]]):
+        """Draw a bezier curve onto the grid
+
+        Args:
+            draw_mode (str): One of ["draw", "erase"] describing the behavior of the instruction
+            fill_mode (bool): True if the instruction will be filled, false if it will only be an outline
+            inputs (list): The bezier curve's three points
+
+        Ref:
+            https://zingl.github.io/bresenham.html
+        """
+        [(x0, y0), (x1, y1), (x2, y2)] = inputs
+        sx, sy = x2 - x1, y2 - y1
+        xx, yy = x0 - x1, y0 - y1
+        cur = xx * sy - yy * sx
+        assert (xx * sx <= 0 and yy * sy <= 0)
+        if xx ** 2 + yy ** 2 < sx ** 2 + sy ** 2:
+            x2 = x0
+            x0 = sx + x1
+            y2 = y0
+            y0 = sy + y1
+            cur = -cur
+        if cur != 0:
+            xx += sx
+            sx = 1 if x0 < x2 else -1
+            xx *= sx
+            yy += sy
+            sy = 1 if y0 < y2 else -1
+            yy *= sy
+            xy = 2 * xx * yy
+            xx *= xx
+            yy *= yy
+            if cur * sx * sy < 0:
+                xx = -xx
+                yy = -yy
+                xy = -xy
+                cur = -cur
+            dx = 4.0 * sy * cur * (x1 - x0) + xx - xy
+            dy = 4.0 * sx * cur * (y0 - y1) + yy - xy
+            xx += xx
+            yy += yy
+            err = dx + dy + xy
+            while True:
+                self.point(draw_mode, _, [(x0, y0)])
+                if x0 == x2 and y0 == y2:
+                    break
+                y1 = 2 * err < dx
+                if dy < 2 * err:
+                    x0 += sx
+                    dx -= xy
+                    dy += yy
+                    err += dy
+                if y1:
+                    y0 += sy
+                    dy -= xy
+                    dx += xx
+                    err += dx
+                if dx < dy:
+                    break
+        self.vector(draw_mode, _, [(x0, y0), (x2, y2)])
+
     def __str__(self) -> str:
         return self.get_grid()
 
@@ -485,4 +546,5 @@ INSTRUCTIONS_MAP = {
     "ellipse": Symbol.ellipse,
     "from_char": Symbol._init_grid_from_symbol,
     "function_call": Symbol.function_call,
+    "bezier": Symbol.bezier,
 }

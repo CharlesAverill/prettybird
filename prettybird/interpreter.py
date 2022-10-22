@@ -358,3 +358,10 @@ class PrettyBirdInterpreter(Interpreter):
             if type(type_tree_or_token) == Token and type_tree_or_token.type == "CNAME":
                 return type_tree_or_token.value
             return self._get_num(type_tree_or_token)
+
+    # TODO: draw generalized bezier curve
+    def bezier_step(self, bezier_tree):
+        p0 = self._get_point(bezier_tree.children[0])
+        p1 = self._get_point(bezier_tree.children[1])
+        p2 = self._get_point(bezier_tree.children[2])
+        self.add_instruction("bezier", [p0, p1, p2])
