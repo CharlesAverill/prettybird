@@ -1,12 +1,14 @@
-?start: character+
+?start: (function_definition | character)+
+
+function_definition: "define" IDENTIFIER function_parameter_list steps_statements
+
+// Was concerned about parameter lists like in "define test(a, b, c,)" but python allows trailing commas
+// so we should allow it too
+function_parameter_list: "(" [function_parameters] ")"
+function_parameters: CNAME "," function_parameters
+                   | CNAME
     
-character: "char" IDENTIFIER ("encoding=" INT)? "{" character_statements "}"
-
-character_statements: character_statement
-                    | character_statement character_statements
-
-character_statement: "base" "{" base_statement "}"
-                   | "steps" steps_statements
+character: "char" IDENTIFIER ("encoding=" INT)? "{" "base" "{" base_statement "}" "steps" steps_statements "}"
 
 ?base_statement: blank_statement
                | constant_base_statement
@@ -21,10 +23,11 @@ constant_base_statement: CONSTANT_BASE_STATEMENT_CHARACTER+ "," constant_base_st
 from_character_base_statement: "from_char" "(" IDENTIFIER ")"
 
 steps_statements: "{" "}"
-                 | "{" step_statement+ "}"
+                | "{" step_statement+ "}"
 
 step_statement: UPDATE_MODE FILLED? HALF? step
               | UPDATE_MODE HALF? FILLED? step
+              | function_call_step
 
 step: point_step
     | vector_step
@@ -35,28 +38,54 @@ step: point_step
     | bezier_step
 
 // Just this point
-point_step: "point" "(" point ")"
+point_step: "point" "(" expression ")"
 
 // Line from first point to second point
-vector_step: "vector" "(" point "," point ")"
+vector_step: "vector" "(" expression "," expression ")"
 
-// Circle with center at point and with radius INT
-circle_step: "circle" "(" point "," INT ")"
+// Circle with center at point and with radius NUM
+circle_step: "circle" "(" expression "," expression ")"
 
-// Ellipse with center at point, width INT, height INT
+// Ellipse with center at point, width NUM, height NUM
 // or an ellipse within the rectangle defined by bottomleft=point, topright=point
-ellipse_step: "ellipse" "(" point "," INT "," INT ")"
-            | "ellipse" "(" point "," point ")"
+ellipse_step: "ellipse" "(" expression "," expression "," expression ")"
+            | "ellipse" "(" expression "," expression ")"
 
-// Square with top left at point and side length INT
-square_step: "square" "(" point "," INT ")"
+// Square with top left at point and side length NUM
+square_step: "square" "(" expression "," expression ")"
 
-// Rectangle with top left at point, width INT, height INT
-rectangle_step: "rectangle" "(" point "," INT "," INT ")"
+// Rectangle with top left at point, width NUM, height NUM
+rectangle_step: "rectangle" "(" expression "," expression "," expression ")"
 
-bezier_step: "bezier" "(" point "," point "," point ")"
+bezier_step: "bezier" "(" expression "," expression "," expression ")"
 
-point: "(" INT "," INT ")"
+function_call_step: CNAME "(" [function_call_parameters] ")"
+function_call_parameters: type "," function_call_parameters
+                        | type
+
+point: "(" expression "," expression ")"
+
+?type: point_type | expression
+
+?point_type: point | CNAME
+
+?power_expression: (number_type | point)
+                 | power_expression "^" (number_type | point) -> pow_expr
+
+?multiplicative_expression: power_expression
+                          | multiplicative_expression "*" power_expression -> mul_expr
+                          | multiplicative_expression "/" power_expression -> div_expr
+                          | multiplicative_expression "%" power_expression -> mod_expr
+
+?additive_expression: multiplicative_expression
+                    | additive_expression "+" multiplicative_expression -> add_expr
+                    | additive_expression "-" multiplicative_expression -> sub_expr
+
+?expression: additive_expression
+
+?number_type: (NUMBER | CNAME) -> positive_int
+            | "-" (NUMBER | CNAME) -> negative_int
+            | "(" expression ")"
 
 UPDATE_MODE: ("draw" | "erase")
 
@@ -80,6 +109,6 @@ WHITESPACE: /\s+/
 
 %import common.CNAME
 %import common.INT
+%import common.NUMBER
 %import common.C_COMMENT
 %import common.DIGIT
-%import common.INT

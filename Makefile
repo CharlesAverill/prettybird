@@ -10,14 +10,15 @@ help:
 	@echo "make vtest: run tests with verbose output"
 
 format:
-	poetry run autopep8 --in-place prettybird/*.py -r
+	poetry run black $$(find prettybird -name "*.py")
+	poetry run autopep8 --in-place $$(find prettybird -name "*.py")
 
 install:
 	poetry install
 	poetry run pre-commit install
 
 lint:
-	poetry run flake8 prettybird/*.py --ignore=E501,W503
+	poetry run flake8 --ignore=E501,W503 $$(find prettybird -name "*.py")
 	poetry run mypy .
 
 run:

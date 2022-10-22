@@ -3,8 +3,8 @@ import pathlib
 
 from lark import Lark
 
-from prettybird import PrettyBirdInterpreter
-from prettybird.formats import Format, BDF, SVG
+from . import PrettyBirdInterpreter
+from .formats import Format, BDF, SVG
 
 from typing import Type
 
@@ -21,8 +21,8 @@ def get_args():
     parser.add_argument(
         "--format",
         "-f",
-        default="BDF",
-        help="Format to convert to. Supported: [BDF, TTF]",
+        default="TTF",
+        help="Format to convert to. Supported: [BDF, SVG, TTF]",
         type=str,
     )
     parser.add_argument(
@@ -36,7 +36,7 @@ def get_args():
         "--stdout",
         default=False,
         action="store_true",
-        help="Print compiled characters' IR to stdout",
+        help="Print compiled glyph IR to stdout",
     )
 
     return parser.parse_args()
@@ -81,7 +81,7 @@ def main():
             exit(1)
         """
 
-    for symbol in interpreter.symbols_dict.values():
+    for symbol in interpreter.symbols.values():
         symbol.compile()
         if args.stdout:
             print(symbol)
@@ -96,16 +96,9 @@ def main():
         properties=[("FONT_ASCENT", 14), ("FONT_DESCENT", 2)],
     )
     """
-    font = get_format(args.format)(
-        args.font_name, "0.1", to_ttf=args.format == "ttf")
-    font.add_symbols(list(interpreter.symbols_dict.values()))
-    font.compile()
-
-    """
-    if args.format == "ttf":
-        font.convert_to_ttf()
-        os.remove(font.filename)
-    """
+    font = get_format(args.format)(args.font_name, "0.1")
+    font.add_symbols(list(interpreter.symbols.values()))
+    font.compile(to_ttf=args.format == "ttf")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
-from .interpreter import PrettyBirdInterpreter  # noqa: F401
-from .symbol import Symbol  # noqa: F401
+from .interpreter import PrettyBirdInterpreter
+from .symbol import Symbol
+from .function import Function
 
-__all__ = ["PrettyBirdInterpreter", "Symbol"]
+__all__ = ["PrettyBirdInterpreter", "Symbol", "Function"]

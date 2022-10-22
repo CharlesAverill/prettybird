@@ -8,6 +8,30 @@ Target is
 ..0000..
 */
 
+define draw_bottom_line(max_x, max_y) {
+    draw vector((0, max_y), (max_x, max_y))
+}
+
+define figure_eight(left_center, right_center, radius) {
+    draw circle(left_center, radius * radius)
+    draw circle(right_center, radius)
+    draw_bottom_line(7, 11)
+    //figure_eight(left_center, right_center, radius)
+}
+
+define draw_negative_circle(x, y, r) {
+    draw circle((-x, -y), r * r)
+}
+
+define circle_wrapper(point, radius) {
+    draw circle(point, radius)
+}
+
+define add_points(p1, p2) {
+    draw circle(p1 + p2, 3)
+    //circle_wrapper(p1 + p2, 3)
+}
+
 // the compiler will accept identifiers of length > 1, but it is undefined behavior
 
 // the optional "encoding=INT" behavior explicitly tells the compiler which character this
@@ -24,19 +48,6 @@ char a {
         draw vector((2, 3), (1, 4))
     }
 }
-
-/*
-char b {
-    base {
-        blank(8, 12)
-    }
-
-    steps {
-        //draw vector((1, 1), (1, 11))
-        draw circle((3, 6), 2)
-    }
-}
-*/
 
 /*
 Target is 
@@ -100,5 +111,25 @@ char 0 {
         draw filled ellipse((0, 0), (7, 15))
         erase filled ellipse((1, 1), (6, 14))
         draw filled ellipse((3, 7), (4, 8))
+    }
+}
+
+char 8 {
+    base {
+        blank(100, 100)
+    }
+
+    steps {
+        figure_eight((3, 3), (3, 7), 1 + 0 * 1 + 2 * 0 + 1 * 1 * 1 * 1)
+    }
+}
+
+char 9 {
+    base {
+        blank(8, 12)
+    }
+
+    steps {
+        add_points((1, 1), (1, 1))
     }
 }
