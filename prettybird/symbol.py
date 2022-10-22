@@ -1,7 +1,7 @@
 import math
 from typing import List
 
-# from .function import Function
+from .utils import arange
 
 
 class Symbol:
@@ -217,8 +217,8 @@ class Symbol:
             if instruction_name not in INSTRUCTIONS_MAP:
                 raise NameError(
                     f'Received bad instruction "{instruction_name}"')
-            INSTRUCTIONS_MAP[instruction_name](self,
-                                               draw_mode, fill_mode, inputs)
+            INSTRUCTIONS_MAP[instruction_name](
+                self, draw_mode, fill_mode, inputs)
 
     def point(self, draw_mode, fill_mode, inputs: list[tuple[int, int]]):
         draw_char = self.get_draw_char(draw_mode)
@@ -253,8 +253,8 @@ class Symbol:
         decision_parameter = 2 * dy - dx
         y = 0
 
-        for x in range(dx + 1):
-            point = (x1 + x * xx + y * yx, y1 + x * xy + y * yy)
+        for x in arange(0, dx + 1, 1):
+            point = (int(x1 + x * xx + y * yx), int(y1 + x * xy + y * yy))
             if self._point_within_grid(point):
                 self._replace_in_grid(draw_char, point)
             if decision_parameter >= 0:
@@ -284,7 +284,8 @@ class Symbol:
             (cx - dy, cy - dx),
         ]:
             if self._point_within_grid(point):
-                self._replace_in_grid(draw_char, point)
+                self._replace_in_grid(
+                    draw_char, (int(point[0]), int(point[1])))
 
     def circle(self, draw_mode, fill_mode, inputs):
         """Draw a vector onto the grid using Bresenham's Circle Generation algorithm
@@ -341,14 +342,17 @@ class Symbol:
         [left_x, top_y] = top_left
         right_x, bottom_y = left_x + side_length - 1, top_y + side_length - 1
         top_right, bottom_left, bottom_right = (
-            right_x, top_y), (left_x, bottom_y), (right_x, bottom_y)
+            (right_x, top_y),
+            (left_x, bottom_y),
+            (right_x, bottom_y),
+        )
         self.vector(draw_mode, fill_mode, [top_left, top_right])
         self.vector(draw_mode, fill_mode, [top_left, bottom_left])
         self.vector(draw_mode, fill_mode, [bottom_right, top_right])
         self.vector(draw_mode, fill_mode, [bottom_right, bottom_left])
 
         if fill_mode:
-            for y in range(top_y, bottom_y):
+            for y in arange(top_y, bottom_y, 1):
                 left_point, right_point = (left_x, y), (right_x, y)
                 self.vector(draw_mode, fill_mode, [left_point, right_point])
 
@@ -395,7 +399,7 @@ class Symbol:
             yy += yy
             err = dx + dy + xy
             while True:
-                self.point(draw_mode, _, [(x0, y0)])
+                self.point(draw_mode, _, [(int(x0), int(y0))])
                 if x0 == x2 and y0 == y2:
                     break
                 y1 = 2 * err < dx
@@ -411,7 +415,7 @@ class Symbol:
                     err += dx
                 if dx < dy:
                     break
-        self.vector(draw_mode, _, [(x0, y0), (x2, y2)])
+        self.vector(draw_mode, _, [(int(x0), int(y0)), (int(x2), int(y2))])
 
     def __str__(self) -> str:
         return self.get_grid()
@@ -426,13 +430,15 @@ class Symbol:
 
         if fill_mode:
             h, k = x0 + a / 2, y0 + b / 2
-            for x in range(x0, x1 + 1):
-                for y in range(y0, y1 + 1):
-                    if (((x - h) ** 2) / (a * a / 4)) + (((y - k) ** 2) / (b * b / 4)) <= 1:
+            for x in arange(x0, x1 + 1, 1):
+                for y in arange(y0, y1 + 1, 1):
+                    if (((x - h) ** 2) / (a * a / 4)) + (
+                        ((y - k) ** 2) / (b * b / 4)
+                    ) <= 1:
                         if self._point_within_grid((x, y)):
-                            self._replace_in_grid(draw_char, (x, y))
+                            self._replace_in_grid(draw_char, (int(x), int(y)))
 
-        b1 = b & 1
+        b1 = 1 if b else 0
         dx = 4 * (1 - a) * b * b
         dy = 4 * (b1 + 1) * a * a
         err = dx + dy + b1 * a * a
@@ -456,7 +462,8 @@ class Symbol:
             do_while = False
             for point in [(x1, y0), (x0, y0), (x0, y1), (x1, y1)]:
                 if self._point_within_grid(point):
-                    self._replace_in_grid(draw_char, point)
+                    self._replace_in_grid(
+                        draw_char, (int(point[0]), int(point[1])))
             e2 = 2 * err
             if e2 <= dy:
                 y0 += 1

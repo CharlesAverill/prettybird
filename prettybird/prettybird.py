@@ -96,16 +96,9 @@ def main():
         properties=[("FONT_ASCENT", 14), ("FONT_DESCENT", 2)],
     )
     """
-    font = get_format(args.format)(
-        args.font_name, "0.1")
+    font = get_format(args.format)(args.font_name, "0.1")
     font.add_symbols(list(interpreter.symbols.values()))
     font.compile(to_ttf=args.format == "ttf")
-
-    """
-    if args.format == "ttf":
-        font.convert_to_ttf()
-        os.remove(font.filename)
-    """
 
 
 if __name__ == "__main__":

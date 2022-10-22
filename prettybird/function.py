@@ -1,4 +1,7 @@
 from copy import deepcopy
+from lark import Tree
+
+from .utils import Array
 
 
 class Function:
@@ -36,6 +39,36 @@ class Function:
             (instruction_name, *self.instruction_buffer, inputs))
         self.instruction_buffer = ()
 
+    def _reduce_argument(self, instruction_arg, function_arguments):
+        if type(instruction_arg) == Tree and len(instruction_arg.children) == 1:
+            instruction_arg = instruction_arg.children[0].value
+
+        if type(instruction_arg) == str:
+            return function_arguments[self.parameter_names.index(instruction_arg)]
+        elif type(instruction_arg) in (list, tuple):
+            # Expression
+            if (
+                len(instruction_arg)
+                and repr(type(instruction_arg[0])) == "<class 'function'>"
+            ):
+                x = instruction_arg[0](
+                    Array(
+                        self._reduce_argument(
+                            instruction_arg[1], function_arguments)
+                    ),
+                    Array(
+                        self._reduce_argument(
+                            instruction_arg[2], function_arguments)
+                    ),
+                )
+                return x
+            return [
+                self._reduce_argument(arg, function_arguments)
+                for arg in instruction_arg
+            ]
+
+        return instruction_arg
+
     def compile(self, width, height, arguments):
         # Local imports because Symbol needs to import Function
         from .symbol import Symbol
@@ -43,31 +76,19 @@ class Function:
 
         # Setup function subspace
         subspace = Symbol(f"{self.function_name}_subspace", 0)
-        subspace.grid = get_empty_grid(
-            int(width), int(height)
-        )
+        subspace.grid = get_empty_grid(int(width), int(height))
 
         if len(arguments) != len(self.parameter_names):
             raise TypeError(
-                f"{self.function_name} missing arguments {self.parameter_names[len(arguments):]}")
+                f"{self.function_name} missing arguments {self.parameter_names[len(arguments):]}"
+            )
 
         for orig_instruction in self.instructions:
+            # Don't modify instruction data!
             instruction = deepcopy(orig_instruction)
-            if instruction[0] == "function_call" and instruction[3][0].function_name == self.function_name:
-                raise NotImplementedError("Recursion not yet supported!")
-            # Prepare instructions by subsituting parameter names for arguments
-            # TODO : This is so slow LOL
-            for param_index, param_name in enumerate(self.parameter_names):
-                for i in range(len(instruction[3])):
-                    if instruction[3][i] == param_name:
-                        instruction[3][i] = arguments[param_index]
-                    elif type(instruction[3][i]) in (list, tuple):
-                        new_vers = list(instruction[3][i])
-                        for j in range(len(new_vers)):
-                            if new_vers[j] == param_name:
-                                new_vers[j] = arguments[param_index]
-                        instruction[3][i] = new_vers
-            # Add instructions to subspace
+            instruction_args = instruction[3]
+            for i, arg in enumerate(instruction_args):
+                instruction_args[i] = self._reduce_argument(arg, arguments)
             subspace.prepare_instruction(instruction[1], instruction[2])
             subspace.add_instruction(instruction[0], instruction[3])
 

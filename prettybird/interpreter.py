@@ -4,7 +4,7 @@ from lark.visitors import Interpreter
 
 from .symbol import Symbol
 from .function import Function
-from .utils.string_utils import get_empty_grid
+from .utils import get_empty_grid, Array
 
 
 class PrettyBirdInterpreter(Interpreter):
@@ -66,7 +66,10 @@ class PrettyBirdInterpreter(Interpreter):
         identifier_name = identifier_token.value
 
         encoding_value = None
-        if type(declaration_tree.children[1]) == Token and declaration_tree.children[1].type == "INT":
+        if (
+            type(declaration_tree.children[1]) == Token
+            and declaration_tree.children[1].type == "INT"
+        ):
             encoding_value = declaration_tree.children[1]
         if encoding_value is None:
             encoding_value = ord(identifier_name)
@@ -75,8 +78,7 @@ class PrettyBirdInterpreter(Interpreter):
         if identifier_name in self.symbols:
             raise NameError(f'Identifier "{identifier_name}" already exists')
 
-        self.symbols[identifier_name] = Symbol(
-            identifier_name, encoding_value)
+        self.symbols[identifier_name] = Symbol(identifier_name, encoding_value)
 
         self.current_symbol = self.symbols[identifier_name]
         self.current_function = None
@@ -139,7 +141,8 @@ class PrettyBirdInterpreter(Interpreter):
         from_identifier = character_base_tree.children[0].value
         self.current_symbol.prepare_instruction("draw", False)
         self.current_symbol.add_instruction(
-            "from_char", [self.get_symbol(from_identifier)])
+            "from_char", [self.get_symbol(from_identifier)]
+        )
 
     def function_definition(self, function_def_tree):
         function_name = function_def_tree.children[0].value
@@ -147,7 +150,8 @@ class PrettyBirdInterpreter(Interpreter):
 
         self.current_symbol = None
         self.current_function = Function(
-            function_name, function_parameter_names, function_def_tree.children[2])
+            function_name, function_parameter_names, function_def_tree.children[2]
+        )
         self.functions[function_name] = self.current_function
 
         self.visit(function_def_tree.children[2])
@@ -198,15 +202,36 @@ class PrettyBirdInterpreter(Interpreter):
 
     def _get_point(self, point_tree_or_token):
         if type(point_tree_or_token) == Tree:
-            return (self._get_num(point_tree_or_token.children[0]), self._get_num(point_tree_or_token.children[1]))
+            if "expr" in point_tree_or_token.data:
+                return self.visit(point_tree_or_token)
+            if len(point_tree_or_token.children) == 2:
+                return (
+                    self._get_num(point_tree_or_token.children[0]),
+                    self._get_num(point_tree_or_token.children[1]),
+                )
+            elif len(point_tree_or_token.children) == 1:
+                return str(point_tree_or_token.children[0].value)
         else:
             return str(point_tree_or_token)
 
-    def _get_num(self, num_token):
-        if num_token.type == "CNAME":
-            return str(num_token)
+    def _get_num(self, num_tree):
+        num_token = None
+        negative = False
+
+        if type(num_tree) == Token:
+            num_token = num_tree
         else:
-            return int(num_token.value)
+            if "expr" in num_tree.data:
+                return self.visit(num_tree)
+            num_token = Token("NUMBER", self._get_num(num_tree.children[0]))
+            if type(num_token.value) == str:
+                num_token = Token("CNAME", num_token.value)
+            negative = num_tree.data == "negative_int"
+
+        if num_token.type == "CNAME":
+            return ("-" if negative else "") + str(num_token)
+        else:
+            return (-1 if negative else 1) * float(num_token.value)
 
     def point_step(self, point_tree):
         self.add_instruction(
@@ -215,8 +240,7 @@ class PrettyBirdInterpreter(Interpreter):
     def vector_step(self, vector_tree):
         first_point = self._get_point(vector_tree.children[0])
         second_point = self._get_point(vector_tree.children[1])
-        self.add_instruction(
-            "vector", [first_point, second_point])
+        self.add_instruction("vector", [first_point, second_point])
 
     def circle_step(self, circle_tree):
         center = self._get_point(circle_tree.children[0])
@@ -234,8 +258,8 @@ class PrettyBirdInterpreter(Interpreter):
             center = self._get_point(ellipse_tree.children[0])
             width = self._get_num(ellipse_tree.children[1])
             height = self._get_num(ellipse_tree.children[2])
-            p1 = (center[0] - int(width / 2), center[1] - int(height / 2))
-            p2 = (center[0] + int(width / 2), center[1] + int(height / 2))
+            p1 = (center[0] - width / 2, center[1] - height / 2)
+            p2 = (center[0] + width / 2, center[1] + height / 2)
         else:
             p1 = self._get_point(ellipse_tree.children[0])
             p2 = self._get_point(ellipse_tree.children[1])
@@ -244,12 +268,15 @@ class PrettyBirdInterpreter(Interpreter):
     def function_call_step(self, function_call_tree):
         function_name = function_call_tree.children[0].value
         if function_name not in self.functions:
-            raise NameError(f"Undeclared function \"{function_name}\"")
+            raise NameError(f'Undeclared function "{function_name}"')
         function_parameters = self.function_call_parameters(
-            function_call_tree.children[1])
+            function_call_tree.children[1]
+        )
         self.prepare_instruction(False, False)
         self.add_instruction(
-            "function_call", [self.functions[function_name], function_parameters])
+            "function_call", [
+                self.functions[function_name], function_parameters]
+        )
 
     def function_call_parameters(self, function_params_tree):
         if type(function_params_tree) == Token:
@@ -261,13 +288,76 @@ class PrettyBirdInterpreter(Interpreter):
             out += self.visit(function_params_tree.children[1])
         return out
 
-    def type(self, type_tree_or_token):
-        if (type(type_tree_or_token) == Tree):
-            return self._get_point(type_tree_or_token)
+    def _expr_simplify(self, to_simplify):
+        if to_simplify.shape != () and len(to_simplify) > 1:
+            return tuple(to_simplify)
         else:
-            if type_tree_or_token.type == "CNAME":
+            return float(to_simplify)
+
+    def add_expr(self, add_tree):
+        left = self.type(add_tree.children[0])
+        right = self.type(add_tree.children[1])
+        if type(left) not in (int, float, tuple) or type(right) not in (
+            int,
+            float,
+            tuple,
+        ):
+            return [lambda x, y: x + y, left, right]
+        out = Array(left) + Array(right)
+        return self._expr_simplify(out)
+
+    def sub_expr(self, sub_tree):
+        left = self.type(sub_tree.children[0])
+        right = self.type(sub_tree.children[1])
+        if type(left) not in (int, float) or type(right) not in (int, float):
+            return [lambda x, y: x - y, left, right]
+        out = Array(left) - Array(right)
+        return self._expr_simplify(out)
+
+    def mul_expr(self, mul_tree):
+        left = self.type(mul_tree.children[0])
+        right = self.type(mul_tree.children[1])
+        if type(left) not in (int, float) or type(right) not in (int, float):
+            return [lambda x, y: x * y, left, right]
+        out = Array(left) * Array(right)
+        return self._expr_simplify(out)
+
+    def div_expr(self, div_tree):
+        left = self.type(div_tree.children[0])
+        right = self.type(div_tree.children[1])
+        if type(left) not in (int, float) or type(right) not in (int, float):
+            return [lambda x, y: x / y, left, right]
+        out = Array(left) / Array(right)
+        return self._expr_simplify(out)
+
+    def pow_expr(self, pow_tree):
+        left = self.type(pow_tree.children[0])
+        right = self.type(pow_tree.children[1])
+        if type(left) not in (int, float) or type(right) not in (int, float):
+            return [lambda x, y: x**y, left, right]
+        out = Array(left) ** Array(right)
+        return self._expr_simplify(out)
+
+    def mod_expr(self, mod_tree):
+        left = self.type(mod_tree.children[0])
+        right = self.type(mod_tree.children[1])
+        if type(left) not in (int, float) or type(right) not in (int, float):
+            return [lambda x, y: x % y, left, right]
+        out = Array(left) % Array(right)
+        return self._expr_simplify(out)
+
+    def type(self, type_tree_or_token):
+        if type(type_tree_or_token) == Tree:
+            if "expr" in type_tree_or_token.data:
+                return self.visit(type_tree_or_token)
+            elif len(type_tree_or_token.children) > 1:
+                return self._get_point(type_tree_or_token)
+            else:
+                return self.type(type_tree_or_token.children[0])
+        else:
+            if type(type_tree_or_token) == Token and type_tree_or_token.type == "CNAME":
                 return type_tree_or_token.value
-            return int(type_tree_or_token.value)
+            return self._get_num(type_tree_or_token)
 
     # TODO: draw generalized bezier curve
     def bezier_step(self, bezier_tree):

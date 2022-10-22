@@ -38,37 +38,54 @@ step: point_step
     | bezier_step
 
 // Just this point
-point_step: "point" "(" point_type ")"
+point_step: "point" "(" expression ")"
 
 // Line from first point to second point
-vector_step: "vector" "(" point_type "," point_type ")"
+vector_step: "vector" "(" expression "," expression ")"
 
-// Circle with center at point and with radius INT
-circle_step: "circle" "(" point_type "," int_type ")"
+// Circle with center at point and with radius NUM
+circle_step: "circle" "(" expression "," expression ")"
 
-// Ellipse with center at point, width INT, height INT
+// Ellipse with center at point, width NUM, height NUM
 // or an ellipse within the rectangle defined by bottomleft=point, topright=point
-ellipse_step: "ellipse" "(" point_type "," int_type "," int_type ")"
-            | "ellipse" "(" point_type "," point_type ")"
+ellipse_step: "ellipse" "(" expression "," expression "," expression ")"
+            | "ellipse" "(" expression "," expression ")"
 
-// Square with top left at point and side length INT
-square_step: "square" "(" point_type "," int_type ")"
+// Square with top left at point and side length NUM
+square_step: "square" "(" expression "," expression ")"
 
-// Rectangle with top left at point, width INT, height INT
-rectangle_step: "rectangle" "(" point_type "," int_type "," int_type ")"
+// Rectangle with top left at point, width NUM, height NUM
+rectangle_step: "rectangle" "(" expression "," expression "," expression ")"
 
-bezier_step: "bezier" "(" point_type "," point_type "," point_type ")"
+bezier_step: "bezier" "(" expression "," expression "," expression ")"
 
 function_call_step: CNAME "(" [function_call_parameters] ")"
 function_call_parameters: type "," function_call_parameters
                         | type
 
-point: "(" int_type "," int_type ")"
+point: "(" expression "," expression ")"
 
-?type: point_type | int_type
+?type: point_type | expression
+
 ?point_type: point | CNAME
-?int_type: INT | CNAME
-?literal: point | INT
+
+?power_expression: (number_type | point)
+                 | power_expression "^" (number_type | point) -> pow_expr
+
+?multiplicative_expression: power_expression
+                          | multiplicative_expression "*" power_expression -> mul_expr
+                          | multiplicative_expression "/" power_expression -> div_expr
+                          | multiplicative_expression "%" power_expression -> mod_expr
+
+?additive_expression: multiplicative_expression
+                    | additive_expression "+" multiplicative_expression -> add_expr
+                    | additive_expression "-" multiplicative_expression -> sub_expr
+
+?expression: additive_expression
+
+?number_type: (NUMBER | CNAME) -> positive_int
+            | "-" (NUMBER | CNAME) -> negative_int
+            | "(" expression ")"
 
 UPDATE_MODE: ("draw" | "erase")
 
@@ -92,6 +109,6 @@ WHITESPACE: /\s+/
 
 %import common.CNAME
 %import common.INT
+%import common.NUMBER
 %import common.C_COMMENT
 %import common.DIGIT
-%import common.INT

@@ -5,8 +5,8 @@ from prettybird.interpreter import PrettyBirdInterpreter
 
 
 def test_square():
-    parser = Lark(open(pathlib.Path(__file__).parent /
-                       "../prettybird/grammar.lark", encoding="utf-8"))
+    parser = Lark(open(pathlib.Path(__file__).parents[1] /
+                       "prettybird" / "grammar.lark", encoding="utf-8"))
     interpreter = PrettyBirdInterpreter()
     input_pbd = r"""
 char s {
@@ -40,8 +40,8 @@ char s {
 
 
 def test_filled_squared():
-    parser = Lark(open(pathlib.Path(__file__).parent /
-                       "../prettybird/grammar.lark", encoding="utf-8"))
+    parser = Lark(open(pathlib.Path(__file__).parents[1] /
+                       "prettybird" / "grammar.lark", encoding="utf-8"))
     interpreter = PrettyBirdInterpreter()
     input_pbd = r"""
 char f {
@@ -76,8 +76,8 @@ char f {
 
 
 def test_circle():
-    parser = Lark(open(pathlib.Path(__file__).parent /
-                       "../prettybird/grammar.lark", encoding="utf-8"))
+    parser = Lark(open(pathlib.Path(__file__).parents[1] /
+                       "prettybird" / "grammar.lark", encoding="utf-8"))
     interpreter = PrettyBirdInterpreter()
     input_pbd = r"""
 char o {
@@ -113,8 +113,8 @@ char o {
 
 
 def test_vector():
-    parser = Lark(open(pathlib.Path(__file__).parent /
-                       "../prettybird/grammar.lark", encoding="utf-8"))
+    parser = Lark(open(pathlib.Path(__file__).parents[1] /
+                       "prettybird" / "grammar.lark", encoding="utf-8"))
     interpreter = PrettyBirdInterpreter()
     input_pbd = r"""
 char a {
