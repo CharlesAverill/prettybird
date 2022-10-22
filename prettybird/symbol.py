@@ -399,7 +399,7 @@ class Symbol:
             yy += yy
             err = dx + dy + xy
             while True:
-                self.point(draw_mode, _, [(x0, y0)])
+                self.point(draw_mode, _, [(int(x0), int(y0))])
                 if x0 == x2 and y0 == y2:
                     break
                 y1 = 2 * err < dx
@@ -415,7 +415,7 @@ class Symbol:
                     err += dx
                 if dx < dy:
                     break
-        self.vector(draw_mode, _, [(x0, y0), (x2, y2)])
+        self.vector(draw_mode, _, [(int(x0), int(y0)), (int(x2), int(y2))])
 
     def __str__(self) -> str:
         return self.get_grid()
