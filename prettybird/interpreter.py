@@ -297,7 +297,7 @@ class PrettyBirdInterpreter(Interpreter):
         if len(function_params_tree.children) > 1:
             out += self.visit(function_params_tree.children[1])
         return out
-    
+
     def stop_statement(self, stop_tree):
         if len(stop_tree.children) == 0:
             self.prepare_instruction(False, False)
@@ -306,7 +306,10 @@ class PrettyBirdInterpreter(Interpreter):
             left = self.type(stop_tree.children[0])
             right = self.type(stop_tree.children[2])
             self.prepare_instruction(False, False)
-            self.add_instruction("stop", [self.comparator_dict[stop_tree.children[1].value], left, right])
+            self.add_instruction(
+                "stop", [
+                    self.comparator_dict[stop_tree.children[1].value], left, right]
+            )
 
     def _expr_simplify(self, to_simplify):
         if to_simplify.shape != () and len(to_simplify) > 1:
@@ -365,7 +368,7 @@ class PrettyBirdInterpreter(Interpreter):
             return [lambda x, y: x % y, right, left]
         out = Array(left) % Array(right)
         return self._expr_simplify(out)
-    
+
     def and_expr(self, and_tree):
         left = self.type(and_tree.children[0])
         right = self.type(and_tree.children[1])
@@ -373,7 +376,7 @@ class PrettyBirdInterpreter(Interpreter):
             return [lambda x, y: x & y, right, left]
         out = Array(left) % Array(right)
         return self._expr_simplify(out)
-    
+
     def xor_expr(self, xor_tree):
         left = self.type(xor_tree.children[0])
         right = self.type(xor_tree.children[1])
@@ -381,7 +384,7 @@ class PrettyBirdInterpreter(Interpreter):
             return [lambda x, y: x ^ y, right, left]
         out = Array(left) % Array(right)
         return self._expr_simplify(out)
-    
+
     def or_expr(self, or_tree):
         left = self.type(or_tree.children[0])
         right = self.type(or_tree.children[1])

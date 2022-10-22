@@ -223,12 +223,12 @@ class Symbol:
                     f'Received bad instruction "{instruction_name}"')
             INSTRUCTIONS_MAP[instruction_name](
                 self, draw_mode, fill_mode, inputs)
-    
+
     def stop(self, _draw_mode, _fill_mode, inputs):
         if len(inputs) == 0:
             self._stop_flag = True
             return
-        
+
         self._stop_flag = inputs[0](inputs[1], inputs[2])
 
     def point(self, draw_mode, fill_mode, inputs: list[tuple[int, int]]):
@@ -382,8 +382,8 @@ class Symbol:
         sx, sy = x2 - x1, y2 - y1
         xx, yy = x0 - x1, y0 - y1
         cur = xx * sy - yy * sx
-        assert (xx * sx <= 0 and yy * sy <= 0)
-        if xx ** 2 + yy ** 2 < sx ** 2 + sy ** 2:
+        assert xx * sx <= 0 and yy * sy <= 0
+        if xx**2 + yy**2 < sx**2 + sy**2:
             x2 = x0
             x0 = sx + x1
             y2 = y0
@@ -506,7 +506,8 @@ class Symbol:
         function_inputs = inputs[1]
         try:
             function_subspace = function.compile(
-                self.width, self.height, function_inputs)
+                self.width, self.height, function_inputs
+            )
         except RecursionError:
             exit("recursion error")
         self._logical_or_bitmap(function_subspace)
@@ -561,5 +562,5 @@ INSTRUCTIONS_MAP = {
     "from_char": Symbol._init_grid_from_symbol,
     "function_call": Symbol.function_call,
     "bezier": Symbol.bezier,
-    "stop": Symbol.stop
+    "stop": Symbol.stop,
 }

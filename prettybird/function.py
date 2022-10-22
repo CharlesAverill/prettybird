@@ -54,16 +54,19 @@ class Function:
                 x = instruction_arg[0](
                     Array(
                         self._reduce_argument(
-                            instruction_arg[1], function_arguments, is_function_call)
+                            instruction_arg[1], function_arguments, is_function_call
+                        )
                     ),
                     Array(
                         self._reduce_argument(
-                            instruction_arg[2], function_arguments, is_function_call)
+                            instruction_arg[2], function_arguments, is_function_call
+                        )
                     ),
                 )
                 return x
             return [
-                self._reduce_argument(arg, function_arguments, is_function_call)
+                self._reduce_argument(
+                    arg, function_arguments, is_function_call)
                 for arg in instruction_arg
             ]
         elif type(instruction_arg) == Function:
@@ -89,9 +92,11 @@ class Function:
             # Don't overwrite the original instruction
             instruction = deepcopy(orig_instruction)
             instruction_args = instruction[3]
-            
+
             for i, arg in enumerate(instruction_args):
-                instruction_args[i] = self._reduce_argument(arg, arguments, instruction[0] == "function_call")
+                instruction_args[i] = self._reduce_argument(
+                    arg, arguments, instruction[0] == "function_call"
+                )
             subspace.prepare_instruction(instruction[1], instruction[2])
             subspace.add_instruction(instruction[0], instruction[3])
 
