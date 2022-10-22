@@ -31,6 +31,15 @@ char a {
 
     steps {
         draw_square_spiral((1, 1), 73, 73, 1, 1)
-        //draw_steps((1, 1), 95)
+    }
+}
+
+char b {
+    base {
+        blank(75, 75)
+    }
+
+    steps {
+        draw_steps((1, 1), 73)
     }
 }
