@@ -29,12 +29,13 @@ step_statement: UPDATE_MODE FILLED? HALF? step
               | UPDATE_MODE HALF? FILLED? step
               | function_call_step
 
-?step: point_step
-     | vector_step
-     | circle_step
-     | ellipse_step
-     | square_step
-     | rectangle_step
+step: point_step
+    | vector_step
+    | circle_step
+    | ellipse_step
+    | square_step
+    | rectangle_step
+    | bezier_step
 
 // Just this point
 point_step: "point" "(" point_type ")"
@@ -55,6 +56,8 @@ square_step: "square" "(" point_type "," int_type ")"
 
 // Rectangle with top left at point, width INT, height INT
 rectangle_step: "rectangle" "(" point_type "," int_type "," int_type ")"
+
+bezier_step: "bezier" "(" point_type "," point_type "," point_type ")"
 
 function_call_step: CNAME "(" [function_call_parameters] ")"
 function_call_parameters: type "," function_call_parameters

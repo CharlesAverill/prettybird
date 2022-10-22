@@ -143,3 +143,36 @@ char a {
         print(str(symbol))
     achieved = "".join(compiled_symbols)
     assert expected == achieved
+
+
+def test_bezier_curve():
+    parser = Lark(open(pathlib.Path(__file__).parent /
+                       "../prettybird/grammar.lark", encoding="utf-8"))
+    interpreter = PrettyBirdInterpreter()
+    input_pbd = r"""
+char a {
+    base {
+        blank(7, 7)
+    }
+
+    steps {
+        draw bezier((0, 6), (0, 2), (6, 0))
+    }
+}
+    """
+    parse_tree = parser.parse(input_pbd)
+    interpreter.visit(parse_tree)
+    expected = """.....00
+...00..
+..0....
+.0.....
+0......
+0......
+0......"""
+    compiled_symbols = []
+    for symbol in interpreter.symbols.values():
+        symbol.compile()
+        compiled_symbols.append(str(symbol))
+        print(str(symbol))
+    achieved = "".join(compiled_symbols)
+    assert expected == achieved
