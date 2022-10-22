@@ -126,10 +126,10 @@ char 8 {
 
 char 9 {
     base {
-        blank(8, 12)
+        blank(50, 50)
     }
 
     steps {
-        add_points((1, 1), (1, 1))
+        draw_square_spiral((1, 1), 49, 30)
     }
 }

@@ -19,6 +19,7 @@ class Symbol:
         self._grid = ""
         self._instruction_buffer = ()
         self._instructions = []
+        self._stop_flag = False
 
     @property
     def identifier(self):
@@ -213,12 +214,22 @@ class Symbol:
             NameError: If an instruction was not recognized
         """
         for instruction in self._instructions:
+            if self._stop_flag:
+                break
+
             instruction_name, draw_mode, fill_mode, inputs = instruction
             if instruction_name not in INSTRUCTIONS_MAP:
                 raise NameError(
                     f'Received bad instruction "{instruction_name}"')
             INSTRUCTIONS_MAP[instruction_name](
                 self, draw_mode, fill_mode, inputs)
+    
+    def stop(self, _draw_mode, _fill_mode, inputs):
+        if len(inputs) == 0:
+            self._stop_flag = True
+            return
+        
+        self._stop_flag = inputs[0](inputs[1], inputs[2])
 
     def point(self, draw_mode, fill_mode, inputs: list[tuple[int, int]]):
         draw_char = self.get_draw_char(draw_mode)
@@ -493,8 +504,11 @@ class Symbol:
     def function_call(self, _draw_mode, _fill_mode, inputs):
         function = inputs[0]
         function_inputs = inputs[1]
-        function_subspace = function.compile(
-            self.width, self.height, function_inputs)
+        try:
+            function_subspace = function.compile(
+                self.width, self.height, function_inputs)
+        except RecursionError:
+            exit("recursion error")
         self._logical_or_bitmap(function_subspace)
 
     def grid_hex_repr(self):
@@ -547,4 +561,5 @@ INSTRUCTIONS_MAP = {
     "from_char": Symbol._init_grid_from_symbol,
     "function_call": Symbol.function_call,
     "bezier": Symbol.bezier,
+    "stop": Symbol.stop
 }

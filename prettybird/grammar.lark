@@ -28,6 +28,7 @@ steps_statements: "{" "}"
 step_statement: UPDATE_MODE FILLED? HALF? step
               | UPDATE_MODE HALF? FILLED? step
               | function_call_step
+              | stop_statement
 
 step: point_step
     | vector_step
@@ -63,6 +64,9 @@ function_call_step: CNAME "(" [function_call_parameters] ")"
 function_call_parameters: type "," function_call_parameters
                         | type
 
+stop_statement: "stop" "if" expression COMPARATOR expression
+              | "stop"
+
 point: "(" expression "," expression ")"
 
 ?type: point_type | expression
@@ -81,13 +85,29 @@ point: "(" expression "," expression ")"
                     | additive_expression "+" multiplicative_expression -> add_expr
                     | additive_expression "-" multiplicative_expression -> sub_expr
 
-?expression: additive_expression
+?bitwise_and_expression: additive_expression
+                       | bitwise_and_expression "and" additive_expression -> and_expr
+
+?bitwise_xor_expr: bitwise_and_expression
+                 | bitwise_xor_expr "xor" bitwise_and_expression -> xor_expr
+
+?bitwise_or_expr: bitwise_xor_expr
+                | bitwise_or_expr "or" bitwise_xor_expr -> or_expr
+
+?expression: bitwise_or_expr
 
 ?number_type: (NUMBER | CNAME) -> positive_int
             | "-" (NUMBER | CNAME) -> negative_int
             | "(" expression ")"
 
 UPDATE_MODE: ("draw" | "erase")
+
+COMPARATOR: "<"
+          | ">"
+          | "<="
+          | ">="
+          | "=="
+          | "!"
 
 FILLED: "filled"
 
