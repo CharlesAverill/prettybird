@@ -10,7 +10,7 @@ help:
 	@echo "make vtest: run tests with verbose output"
 
 format:
-	poetry run black $$(find prettybird -name "*.py");
+	poetry run black $$(find prettybird -name "*.py")
 	poetry run autopep8 --in-place $$(find prettybird -name "*.py")
 
 install:
