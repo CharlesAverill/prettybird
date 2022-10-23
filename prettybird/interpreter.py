@@ -8,6 +8,16 @@ from .utils import get_empty_grid, Array
 
 
 class PrettyBirdInterpreter(Interpreter):
+
+    comparator_dict = {
+        "<": lambda x, y: x < y,
+        "<=": lambda x, y: x <= y,
+        ">": lambda x, y: x > y,
+        ">=": lambda x, y: x >= y,
+        "==": lambda x, y: x == y,
+        "!=": lambda x, y: x != y,
+    }
+
     def __init__(self):
         """Initialize the Interpreter"""
         self.symbols = {}
@@ -192,7 +202,7 @@ class PrettyBirdInterpreter(Interpreter):
                     # Either "filled" or nothing
                     fill_mode = child.value
             elif type(child) == Tree:
-                if child.data != "function_call_step":
+                if child.data not in ("function_call_step", "stop_statement"):
                     self.prepare_instruction(
                         update_mode, fill_mode is not None)
                 self.visit(child)
@@ -288,6 +298,19 @@ class PrettyBirdInterpreter(Interpreter):
             out += self.visit(function_params_tree.children[1])
         return out
 
+    def stop_statement(self, stop_tree):
+        if len(stop_tree.children) == 0:
+            self.prepare_instruction(False, False)
+            self.add_instruction("stop", [])
+        else:
+            left = self.type(stop_tree.children[0])
+            right = self.type(stop_tree.children[2])
+            self.prepare_instruction(False, False)
+            self.add_instruction(
+                "stop", [
+                    self.comparator_dict[stop_tree.children[1].value], left, right]
+            )
+
     def _expr_simplify(self, to_simplify):
         if to_simplify.shape != () and len(to_simplify) > 1:
             return tuple(to_simplify)
@@ -342,7 +365,31 @@ class PrettyBirdInterpreter(Interpreter):
         left = self.type(mod_tree.children[0])
         right = self.type(mod_tree.children[1])
         if type(left) not in (int, float) or type(right) not in (int, float):
-            return [lambda x, y: x % y, left, right]
+            return [lambda x, y: x % y, right, left]
+        out = Array(left) % Array(right)
+        return self._expr_simplify(out)
+
+    def and_expr(self, and_tree):
+        left = self.type(and_tree.children[0])
+        right = self.type(and_tree.children[1])
+        if type(left) not in (int, float) or type(right) not in (int, float):
+            return [lambda x, y: x & y, right, left]
+        out = Array(left) % Array(right)
+        return self._expr_simplify(out)
+
+    def xor_expr(self, xor_tree):
+        left = self.type(xor_tree.children[0])
+        right = self.type(xor_tree.children[1])
+        if type(left) not in (int, float) or type(right) not in (int, float):
+            return [lambda x, y: x ^ y, right, left]
+        out = Array(left) % Array(right)
+        return self._expr_simplify(out)
+
+    def or_expr(self, or_tree):
+        left = self.type(or_tree.children[0])
+        right = self.type(or_tree.children[1])
+        if type(left) not in (int, float) or type(right) not in (int, float):
+            return [lambda x, y: x | y, right, left]
         out = Array(left) % Array(right)
         return self._expr_simplify(out)
 

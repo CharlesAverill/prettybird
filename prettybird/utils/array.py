@@ -99,7 +99,27 @@ class Array:
     def __rmul__(self, other):
         return self * other
 
-    def __div__(self, other):
+    def __mod__(self, other):
+        other = Array(other)
+        if other.shape == () and self.shape == ():
+            return Array(other.data % self.data)
+        elif other.shape == () or other.size == 1:
+            return Array([d % other.data for d in self.data])
+        elif other.shape == self.shape:
+            return Array([other.data[i] % self.data[i] for i in range(self.shape[0])])
+        elif self.shape == () or self.size == 1:
+            return Array([d + self.data for d in other.data])
+        else:
+            raise ValueError(
+                f"Cannot operate on Arrays of different sizes: {self.size}, {other.size}"
+            )
+
+    """
+    def __rmod__(self, other):
+        return self * other
+    """
+
+    def __rtruediv__(self, other):
         other = Array(other)
         if other.shape == () and self.shape == ():
             return Array(other.data / self.data)
@@ -114,8 +134,8 @@ class Array:
                 f"Cannot operate on Arrays of different sizes: {self.size}, {other.size}"
             )
 
-    def __rdiv__(self, other):
-        return other * (1 / self)
+    def __truediv__(self, other):
+        return self * (1 / other)
 
     def __iter__(self):
         return iter(self.data)
@@ -186,10 +206,59 @@ class Array:
     def __abs__(self):
         return abs(self.data)
 
+    def __and__(self, other):
+        other = Array(other)
+        if other.shape == () and self.shape == ():
+            return Array(int(other.data) & int(self.data))
+        elif other.shape == () or other.size == 1:
+            return Array([d & int(other.data) for d in int(self.data)])
+        elif other.shape == self.shape:
+            return Array(
+                [int(other.data)[i] & int(self.data)[i]
+                 for i in range(self.shape[0])]
+            )
+        elif self.shape == () or self.size == 1:
+            return Array([d & int(self.data) for d in int(other.data)])
+        else:
+            raise ValueError(
+                f"Cannot operate on Arrays of different sizes: {self.size}, {other.size}"
+            )
 
-if __name__ == "__main__":
-    a = Array([1, 1])
-    b = Array(a)
-    print(a)
-    print(2 - a)
-    print(a.size)
+    def __xor__(self, other):
+        other = Array(other)
+        if other.shape == () and self.shape == ():
+            return Array(int(other.data) ^ int(self.data))
+        elif other.shape == () or other.size == 1:
+            return Array([d ^ int(other.data) for d in int(self.data)])
+        elif other.shape == self.shape:
+            return Array(
+                [int(other.data)[i] ^ int(self.data)[i]
+                 for i in range(self.shape[0])]
+            )
+        elif self.shape == () or self.size == 1:
+            return Array([d ^ int(self.data) for d in int(other.data)])
+        else:
+            raise ValueError(
+                f"Cannot operate on Arrays of different sizes: {self.size}, {other.size}"
+            )
+
+    def __or__(self, other):
+        other = Array(other)
+        if other.shape == () and self.shape == ():
+            return Array(int(other.data) | int(self.data))
+        elif other.shape == () or other.size == 1:
+            return Array([d | int(other.data) for d in int(self.data)])
+        elif other.shape == self.shape:
+            return Array(
+                [int(other.data)[i] | int(self.data)[i]
+                 for i in range(self.shape[0])]
+            )
+        elif self.shape == () or self.size == 1:
+            return Array([d | int(self.data) for d in int(other.data)])
+        else:
+            raise ValueError(
+                f"Cannot operate on Arrays of different sizes: {self.size}, {other.size}"
+            )
+
+    def __getitem__(self, item):
+        return self.data[item]
