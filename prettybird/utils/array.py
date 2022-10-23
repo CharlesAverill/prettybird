@@ -90,7 +90,7 @@ class Array:
         elif other.shape == self.shape:
             return Array([other.data[i] * self.data[i] for i in range(self.shape[0])])
         elif self.shape == () or self.size == 1:
-            return Array([d + self.data for d in other.data])
+            return Array([d * self.data for d in other.data])
         else:
             raise ValueError(
                 f"Cannot operate on Arrays of different sizes: {self.size}, {other.size}"
@@ -98,6 +98,24 @@ class Array:
 
     def __rmul__(self, other):
         return self * other
+
+    def __pow__(self, other):
+        other = Array(other)
+        if other.shape == () and self.shape == ():
+            return Array(other.data**self.data)
+        elif other.shape == () or other.size == 1:
+            return Array([d**other.data for d in self.data])
+        elif other.shape == self.shape:
+            return Array([other.data[i] ** self.data[i] for i in range(self.shape[0])])
+        elif self.shape == () or self.size == 1:
+            return Array([d**self.data for d in other.data])
+        else:
+            raise ValueError(
+                f"Cannot operate on Arrays of different sizes: {self.size}, {other.size}"
+            )
+
+    def __rpow__(self, other):
+        return self**other
 
     def __mod__(self, other):
         other = Array(other)
@@ -108,7 +126,7 @@ class Array:
         elif other.shape == self.shape:
             return Array([other.data[i] % self.data[i] for i in range(self.shape[0])])
         elif self.shape == () or self.size == 1:
-            return Array([d + self.data for d in other.data])
+            return Array([d % self.data for d in other.data])
         else:
             raise ValueError(
                 f"Cannot operate on Arrays of different sizes: {self.size}, {other.size}"
@@ -128,7 +146,7 @@ class Array:
         elif other.shape == self.shape:
             return Array([other.data[i] / self.data[i] for i in range(self.shape[0])])
         elif self.shape == () or self.size == 1:
-            return Array([d + self.data for d in other.data])
+            return Array([d / self.data for d in other.data])
         else:
             raise ValueError(
                 f"Cannot operate on Arrays of different sizes: {self.size}, {other.size}"
@@ -262,3 +280,6 @@ class Array:
 
     def __getitem__(self, item):
         return self.data[item]
+
+    def __round__(self, digits):
+        return round(self.data, digits)

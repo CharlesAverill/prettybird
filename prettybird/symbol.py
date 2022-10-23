@@ -328,8 +328,7 @@ class Symbol:
         if fill_mode:
             # https://stackoverflow.com/a/24453110/11085206
             radius_squared = radius * radius
-            dy = -radius
-            while dy <= radius:
+            for dy in range(-int(radius), int(radius) + 1):
                 dx = (int)(math.sqrt(radius_squared - dy * dy) + 0.5)
                 self.vector(
                     draw_mode,
@@ -339,7 +338,6 @@ class Symbol:
                         (center[0] + dx, dy + center[1]),
                     ],
                 )
-                dy += 1
 
     def square(self, draw_mode, fill_mode, inputs):
         """Draw a square vector onto the grid
@@ -490,7 +488,8 @@ class Symbol:
         while y0 - y1 < b:
             for point in [(x0 - 1, y0), (x1 + 1, y0), (x0 - 1, y1), (x1 + 1, y1)]:
                 if self._point_within_grid(point):
-                    self._replace_in_grid(draw_char, point)
+                    self._replace_in_grid(
+                        draw_char, (int(point[0]), int(point[1])))
             y0 += 1
             y1 -= 1
 

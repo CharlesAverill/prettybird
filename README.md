@@ -35,9 +35,15 @@ A domain-specific language for programmatically designing fonts
 
 ## Usage
 
-Prettybird provides a CLI to read in `.pbd` (such as [examples/abcs.pbd](examples/abcs.pbd)) files and compile them to various formats.
+### Language Documentation
 
-### General Usage
+COMING SOON
+
+See [showcase.pbd](./examples/showcase.pbd) for a showcase of many of the language's features.
+
+### Compiler Usage
+
+Prettybird provides a CLI to read in `.pbd` (such as [examples/abcs.pbd](examples/abcs.pbd)) files and compile them to various formats.
 
 ```
 prettybird [-h] [--format FORMAT] [--font-name FONT_NAME] [--stdout] input_file
