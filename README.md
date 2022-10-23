@@ -1,4 +1,6 @@
-# prettybird
+![Bullfinch Logo](.github/images/logo.png)
+
+# Prettybird
 
 A domain-specific language for programmatically designing fonts
 
