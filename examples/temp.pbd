@@ -30,7 +30,7 @@ char a {
     }
 
     steps {
-        draw filled square((0, 0), 36)
+        draw filled ellipse((0, 0), (36, 72))
         erase filled square((5, 5), 26)
     }
 }

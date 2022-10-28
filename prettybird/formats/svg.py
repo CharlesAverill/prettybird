@@ -75,19 +75,28 @@ class SVG(Format):
 
     @staticmethod
     def draw_outline_on_svg(symbol, svg_drawing):
-        clip_path = svg_drawing.defs.add(svg_drawing.clipPath())
-        for instruction in symbol._instructions:
+        for i, instruction in enumerate(symbol._instructions):
             instruction_name, draw_mode, filled, inputs = instruction
 
-            to_draw = svg_drawing if draw_mode == "draw" else clip_path
+            if draw_mode == "draw":
+                to_draw = svg_drawing
+            else:
+                clip_path = svg_drawing.defs.add(
+                    svg_drawing.mask(id=f"{i}_{instruction_name}")
+                )
+                to_draw = clip_path
+                to_draw.add(
+                    svg_drawing.rect(insert=(0, 0), size=(
+                        "100%", "100%"), fill="white")
+                )
 
-            # if draw_mode == "erase":
-            #     warnings.warn(
-            #         "The erase keyword is not stable with outline fonts, but may work as expected in some cases. Please check back later!",
-            #         UserWarning,
-            #     )
+            if draw_mode == "erase":
+                warnings.warn(
+                    "The erase keyword is not stable with outline fonts, but may work as expected in some cases. Please check back later!",
+                    UserWarning,
+                )
 
-            stroke = "black" if draw_mode == "draw" else "white"
+            stroke = "black"
             stroke_width = "1px" if filled else "16px"
             fill = stroke if filled else "none"
 
@@ -159,3 +168,14 @@ class SVG(Format):
                         fill=fill,
                     )
                 )
+
+            if draw_mode == "erase":
+                for elem in svg_drawing.elements:
+                    if type(elem) in (
+                        svgwrite.shapes.Line,
+                        svgwrite.shapes.Ellipse,
+                        svgwrite.shapes.Rect,
+                        svgwrite.shapes.Circle,
+                    ):
+                        elem["mask"] = f"url(#{i}_{instruction_name})"
+                # svg_drawing.add(svgwrite.container.Use(mask=f"{i}_{instruction_name}"))
