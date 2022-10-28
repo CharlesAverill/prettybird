@@ -24,5 +24,5 @@ class Format(ABC):
         self.symbols = symbols
 
     @abstractmethod
-    def compile(self, to_ttf=False):
+    def compile(self, to_ttf=False, bitmap=False):
         pass

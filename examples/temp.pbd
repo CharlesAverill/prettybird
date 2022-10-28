@@ -30,7 +30,8 @@ char a {
     }
 
     steps {
-        draw_square_spiral((1, 1), 73, 73, 1, 1)
+        draw filled square((0, 0), 36)
+        erase filled square((5, 5), 26)
     }
 }
 
