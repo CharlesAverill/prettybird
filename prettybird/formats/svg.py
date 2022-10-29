@@ -24,7 +24,12 @@ class SVG(Format):
                 "props": {},
                 "input": str(temp_dir.resolve()),
                 "output": [
-                    str((Path.cwd() / (self.filename)).resolve())
+                    str(
+                        (
+                            Path.cwd()
+                            / (Path(self.filename).stem if to_ttf else self.filename)
+                        ).resolve()
+                    )
                     + (".ttf" if to_ttf else "")
                 ],
                 "glyphs": {},
@@ -44,7 +49,6 @@ class SVG(Format):
                 json_data["glyphs"][hex(ord(symbol.identifier[0]))] = Path(
                     str(svg_drawing.filename)
                 ).name
-                print(svg_drawing.tostring())
                 svg_drawing.save()
 
             temp_json = tempfile.NamedTemporaryFile(mode="w")
@@ -178,4 +182,3 @@ class SVG(Format):
                         svgwrite.shapes.Circle,
                     ):
                         elem["mask"] = f"url(#{i}_{instruction_name})"
-                # svg_drawing.add(svgwrite.container.Use(mask=f"{i}_{instruction_name}"))
