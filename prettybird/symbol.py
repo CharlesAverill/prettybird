@@ -376,11 +376,12 @@ class Symbol:
         Ref:
             https://zingl.github.io/bresenham.html
         """
-        [(x0, y0), (x1, y1), (x2, y2)] = inputs
+        [(x0, y0), (x2, y2), (x1, y1)] = inputs
         sx, sy = x2 - x1, y2 - y1
         xx, yy = x0 - x1, y0 - y1
         cur = xx * sy - yy * sx
-        assert xx * sx <= 0 and yy * sy <= 0
+        assert xx * sx <= 0
+        assert yy * sy <= 0
         if xx**2 + yy**2 < sx**2 + sy**2:
             x2 = x0
             x0 = sx + x1

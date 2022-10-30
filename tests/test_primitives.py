@@ -156,7 +156,7 @@ char a {
     }
 
     steps {
-        draw bezier((0, 6), (0, 2), (6, 0))
+        draw bezier((0, 6), (6, 0), (0, 2))
     }
 }
     """
