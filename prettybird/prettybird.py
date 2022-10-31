@@ -19,6 +19,13 @@ def get_args():
 
     parser.add_argument("input_file", help=".pbd file to compile", type=str)
     parser.add_argument(
+        "--bitmap",
+        "-b",
+        default=False,
+        action="store_true",
+        help="Will render a bitmap font onto an SVG or TTF font",
+    )
+    parser.add_argument(
         "--format",
         "-f",
         default="TTF",
@@ -61,6 +68,10 @@ def main():
         args.font_name = pathlib.Path(args.input_file).stem
     args.format = args.format.lower()
 
+    if not args.bitmap and args.format == "bdf":
+        raise RuntimeError(
+            "The '--bitmap' option must be used to render BDF files")
+
     # Parse the grammar file
     parser = Lark(open(pathlib.Path(__file__).parent / "grammar.lark"))
 
@@ -81,10 +92,11 @@ def main():
             exit(1)
         """
 
-    for symbol in interpreter.symbols.values():
-        symbol.compile()
-        if args.stdout:
-            print(symbol)
+    if args.bitmap:
+        for symbol in interpreter.symbols.values():
+            symbol.compile()
+            if args.stdout:
+                print(symbol)
 
     """
     font = BDF(
@@ -98,7 +110,7 @@ def main():
     """
     font = get_format(args.format)(args.font_name, "0.1")
     font.add_symbols(list(interpreter.symbols.values()))
-    font.compile(to_ttf=args.format == "ttf")
+    font.compile(to_ttf=args.format == "ttf", bitmap=args.bitmap)
 
 
 if __name__ == "__main__":

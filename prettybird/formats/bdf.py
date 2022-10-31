@@ -25,9 +25,14 @@ class BDF(Format):
 
         self.compiled = False
 
-    def compile(self, to_ttf=False):
+    def compile(self, to_ttf=False, bitmap=False):
         if to_ttf:
             raise NotImplementedError("BDF -> TTF conversion not supported")
+
+        if not bitmap:
+            raise RuntimeError(
+                "BDF files can not be generated without the '--bitmap' option"
+            )
 
         self.file = open(self.filename, "w")
 
