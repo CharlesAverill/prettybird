@@ -7,7 +7,11 @@ import warnings
 
 from . import Format
 
+from ..utils import get_progressbar
+
 from pathlib import Path
+
+from progressbar import FormatLabel
 
 
 class SVG(Format):
@@ -35,7 +39,16 @@ class SVG(Format):
                 "glyphs": {},
             }
 
-            for symbol in self.symbols:
+            pbar = None
+            if not all([symbol._is_function_call for symbol in self.symbols]):
+                pbar, widgets = get_progressbar(len(self.symbols))
+
+                pbar.start()
+            for i, symbol in enumerate(self.symbols):
+                if not symbol._is_function_call:
+                    widgets[0] = FormatLabel('Symbol: {0}'.format(symbol.identifier))
+                    pbar.update(i)
+
                 svg_drawing = svgwrite.Drawing(
                     temp_dir / f"{symbol.identifier}.svg",
                     size=(f"{symbol.width * 16}px", f"{symbol.height * 16}px"),
@@ -50,6 +63,8 @@ class SVG(Format):
                     str(svg_drawing.filename)
                 ).name
                 svg_drawing.save()
+            if pbar:
+                pbar.finish()
 
             temp_json = tempfile.NamedTemporaryFile(mode="w")
             json.dump(json_data, temp_json)
