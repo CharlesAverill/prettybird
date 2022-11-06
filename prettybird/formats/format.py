@@ -13,7 +13,10 @@ class Format(ABC):
         if not filename:
             filename = font_name + file_suffix
         elif not filename.lower().endswith(file_suffix):
-            warnings.warn(f'{type(self).__name__} files should end with "{file_suffix}"', UserWarning)
+            warnings.warn(
+                f'{type(self).__name__} files should end with "{file_suffix}"',
+                UserWarning,
+            )
 
         self.filename = filename
         self.font_name = font_name

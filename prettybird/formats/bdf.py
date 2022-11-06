@@ -50,7 +50,8 @@ class BDF(Format):
             if self.properties and len(self.properties):
                 self.file.write(f"STARTPROPERTIES {len(self.properties)}\n")
                 for property in self.properties:
-                    self.file.write(" ".join([str(p) for p in property]) + "\n")
+                    self.file.write(" ".join([str(p)
+                                    for p in property]) + "\n")
                 self.file.write("ENDPROPERTIES\n")
 
             if self.symbols and len(self.symbols):
@@ -61,7 +62,8 @@ class BDF(Format):
                     self.file.write(f"ENCODING {symbol.encoding}\n")
                     self.file.write("SWIDTH 500 0\n")
                     self.file.write(f"DWIDTH {symbol.width} 0\n")
-                    self.file.write(f"BBX {symbol.width} {symbol.height} 0 0\n")
+                    self.file.write(
+                        f"BBX {symbol.width} {symbol.height} 0 0\n")
                     self.file.write("BITMAP\n")
                     self.file.write(symbol.grid_hex_repr())
                     self.file.write("ENDCHAR\n")
@@ -71,7 +73,7 @@ class BDF(Format):
             self.file.close()
 
             self.compiled = True
-        
+
         # Return BDF file contents here, should be appending to a string and then writing
         # all at once, not writing line by line
 

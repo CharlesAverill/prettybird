@@ -341,7 +341,7 @@ class Symbol:
                         (center[0] + dx, dy + center[1]),
                     ],
                 )
-    
+
     def rectangle(self, draw_mode, fill_mode, inputs):
         top_left, bottom_right = inputs[0], inputs[1]
 
@@ -400,9 +400,9 @@ class Symbol:
         sx, sy = x2 - x1, y2 - y1
         xx, yy = x0 - x1, y0 - y1
         cur = xx * sy - yy * sx
-        
-        assert xx * sx < 0
-        assert yy * sy < 0
+
+        assert xx * sx <= 0
+        assert yy * sy <= 0
 
         if xx**2 + yy**2 < sx**2 + sy**2:
             x2 = x0

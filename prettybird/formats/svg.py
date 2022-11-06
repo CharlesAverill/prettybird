@@ -11,7 +11,7 @@ from ..utils import get_progressbar
 
 from pathlib import Path
 
-from progressbar import FormatLabel
+from progressbar import FormatLabel  # type: ignore
 
 
 class SVG(Format):
@@ -27,7 +27,7 @@ class SVG(Format):
             json_data = {
                 "props": {
                     "family": "".join(self.font_name.split()),
-                    "version": self.version
+                    "version": self.version,
                 },
                 "input": str(temp_dir.resolve()),
                 "output": [
@@ -49,7 +49,8 @@ class SVG(Format):
                 pbar.start()
             for i, symbol in enumerate(self.symbols):
                 if not symbol._is_function_call:
-                    widgets[0] = FormatLabel('Symbol: {0}'.format(symbol.identifier))
+                    widgets[0] = FormatLabel(
+                        "Symbol: {0}".format(symbol.identifier))
                     pbar.update(i)
 
                 svg_drawing = svgwrite.Drawing(
@@ -181,7 +182,11 @@ class SVG(Format):
                     )
                 )
             elif instruction_name == "bezier":
-                start_point, end_point, control_point = SVG._mul_tup(inputs[0], 16), SVG._mul_tup(inputs[1], 16), SVG._mul_tup(inputs[2], 16)
+                start_point, end_point, control_point = (
+                    SVG._mul_tup(inputs[0], 16),
+                    SVG._mul_tup(inputs[1], 16),
+                    SVG._mul_tup(inputs[2], 16),
+                )
                 to_draw.add(
                     svg_drawing.path(
                         d=f"M {start_point[0]} {start_point[1]} Q {control_point[0]} {control_point[1]} {end_point[0]} {end_point[1]}",

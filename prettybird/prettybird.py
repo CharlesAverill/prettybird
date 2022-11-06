@@ -9,7 +9,7 @@ from .utils import get_progressbar
 
 from typing import Type
 
-from progressbar import FormatLabel
+from progressbar import FormatLabel  # type: ignore
 
 
 def get_args():
@@ -99,7 +99,7 @@ def main():
         pbar, widgets = get_progressbar(len(interpreter.symbols.values()))
         pbar.start()
         for i, symbol in enumerate(interpreter.symbols.values()):
-            widgets[0] = FormatLabel('Symbol: {0}'.format(symbol.identifier))
+            widgets[0] = FormatLabel("Symbol: {0}".format(symbol.identifier))
             pbar.update(i)
             symbol.compile()
             if args.stdout:
