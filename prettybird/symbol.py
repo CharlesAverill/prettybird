@@ -1,6 +1,8 @@
 import math
 from typing import List
 
+from prettybird.utils.array import Array
+
 from .utils import arange
 
 
@@ -398,8 +400,10 @@ class Symbol:
         sx, sy = x2 - x1, y2 - y1
         xx, yy = x0 - x1, y0 - y1
         cur = xx * sy - yy * sx
-        assert xx * sx <= 0
-        assert yy * sy <= 0
+        
+        assert xx * sx < 0
+        assert yy * sy < 0
+
         if xx**2 + yy**2 < sx**2 + sy**2:
             x2 = x0
             x0 = sx + x1

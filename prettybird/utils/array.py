@@ -283,3 +283,6 @@ class Array:
 
     def __round__(self, digits):
         return round(self.data, digits)
+    
+    def __neg__(self):
+        return -1 * self

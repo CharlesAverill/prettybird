@@ -4,7 +4,7 @@ function_definition: "define" IDENTIFIER function_parameter_list steps_statement
 
 // Was concerned about parameter lists like in "define test(a, b, c,)" but python allows trailing commas
 // so we should allow it too
-function_parameter_list: "(" [function_parameters] ")"
+function_parameter_list: "(" function_parameters* ")"
 function_parameters: CNAME "," function_parameters
                    | CNAME
     
