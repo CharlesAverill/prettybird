@@ -1,11 +1,13 @@
 import math
 from typing import List
 
+from prettybird.utils.array import Array
+
 from .utils import arange
 
 
 class Symbol:
-    def __init__(self, identifier, encoding):
+    def __init__(self, identifier, encoding, is_function_call=False):
         """Initiailze new Symbol
 
         Args:
@@ -20,6 +22,7 @@ class Symbol:
         self._instruction_buffer = ()
         self._instructions = []
         self._stop_flag = False
+        self._is_function_call = is_function_call
 
     @property
     def identifier(self):
@@ -339,6 +342,23 @@ class Symbol:
                     ],
                 )
 
+    def rectangle(self, draw_mode, fill_mode, inputs):
+        top_left, bottom_right = inputs[0], inputs[1]
+
+        top_right = Array((bottom_right[0], top_left[1]))
+        bottom_left = Array((top_left[0], bottom_right[1]))
+
+        self.vector(draw_mode, fill_mode, [top_left, top_right])
+        self.vector(draw_mode, fill_mode, [top_right, bottom_right])
+        self.vector(draw_mode, fill_mode, [bottom_right, bottom_left])
+        self.vector(draw_mode, fill_mode, [bottom_left, top_left])
+
+        if fill_mode:
+            for y in arange(top_left[1], bottom_left[1], 1):
+                left_point = Array((top_left[0], y))
+                right_point = Array((bottom_right[0], y))
+                self.vector(draw_mode, fill_mode, [left_point, right_point])
+
     def square(self, draw_mode, fill_mode, inputs):
         """Draw a square vector onto the grid
 
@@ -380,8 +400,10 @@ class Symbol:
         sx, sy = x2 - x1, y2 - y1
         xx, yy = x0 - x1, y0 - y1
         cur = xx * sy - yy * sx
+
         assert xx * sx <= 0
         assert yy * sy <= 0
+
         if xx**2 + yy**2 < sx**2 + sy**2:
             x2 = x0
             x0 = sx + x1
@@ -563,4 +585,5 @@ INSTRUCTIONS_MAP = {
     "function_call": Symbol.function_call,
     "bezier": Symbol.bezier,
     "stop": Symbol.stop,
+    "rectangle": Symbol.rectangle,
 }

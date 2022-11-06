@@ -1,0 +1,574 @@
+// attach_point is the top-centermost point where the serif and symbol meet
+define horizontal_serif(attach_point, face_direction, width) {
+    draw vector(attach_point - (width, 0), 
+                attach_point + (width, 0))
+    draw bezier(attach_point - (width, 0), 
+                attach_point - (width, 0) + (width * 0.7, face_direction * 4),
+                attach_point - (width, 0) + (width * 0.7, 0))
+    draw bezier(attach_point + (width, 0), 
+                attach_point + (width, face_direction * 4) - (width * 0.7, 0),
+                attach_point + (width, 0) - (width * 0.7, 0))
+}
+
+// attach_point is the top-rightmost point where the serif and symbol meet
+define vertical_serif(attach_point, horizontal_direction, vertical_direction, width) {
+    draw vector(attach_point,
+                attach_point + (0, vertical_direction * width))
+    
+    draw bezier(attach_point + (0, vertical_direction * width),
+                attach_point + (horizontal_direction * width, vertical_direction * width * 0.3),
+                attach_point + (0, vertical_direction * width * 0.3))
+}
+
+define bubble(top, bottom, width, direction) {
+    draw bezier(top, 
+                top + (direction * width, width),
+                top + (direction * width, 0)
+    )
+    draw bezier(top,
+                top + (direction * width * 1.25, width),
+                top + (direction * width * 1.25, 0)
+    )
+
+    draw bezier(top + (direction * width, width),
+                bottom,
+                bottom + (direction * width, 0)
+    )
+    draw bezier(top + (direction * width * 1.25, width),
+                bottom,
+                bottom + (direction * width * 1.25, 0)
+    )
+}
+
+char A {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        horizontal_serif((22, 52), (1 - 2), 6)
+        horizontal_serif((42, 52), (1 - 2), 6)
+
+        draw vector((22, 52), (32, 12))
+
+        draw vector((31, 12), (41, 52))
+        draw vector((32, 12), (42, 52))
+        draw vector((33, 12), (43, 52))
+
+        draw filled rectangle((25, 37), (37, 39))
+    }
+}
+
+char B {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((21, 12), (27, 52))
+
+        horizontal_serif((24, 12), 1, 10)
+        horizontal_serif((24, 52), (1 - 2), 10)
+
+        bubble((32, 12), (32, 28), 8, 1)
+        bubble((27, 28), (27, 52), 12, 1)
+    }
+}
+
+char C {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        /*
+        draw bezier((52, 12), 
+                    (52, 12) - (20, -20),
+                    (52, 12) - (20, 0)
+        )
+        draw bezier((52, 12),
+                    (52, 12) - (20 * 1.25, (1 - 2) * 20),
+                    (52, 12) - (20 * 1.25, 0)
+        )
+
+        draw bezier((52, 12) - (20, (1 - 2) * 20),
+                    (52, 52),
+                    (52, 52) - (20, 0)
+        )
+        draw bezier((52, 12) - (20 * 1.25, (1 - 2) * 20),
+                    (52, 52),
+                    (52, 52) - (20 * 1.25, 0)
+        )
+        */
+        bubble((52, 12), (52, 52), 20, (1 - 2))
+
+        vertical_serif((52, 13), (1 - 2), (1 - 2), 5)
+    }
+}
+
+char D {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((21, 12), (27, 52))
+
+        horizontal_serif((24, 12), 1, 10)
+        horizontal_serif((24, 52), (1 - 2), 10)
+
+        bubble((32, 12), (32, 52), 20, 1)
+    }
+}
+
+char E {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((21, 12), (27, 52))
+
+        horizontal_serif((24, 12), 1, 10)
+        horizontal_serif((24, 52), (1 - 2), 10)
+
+        draw filled rectangle((34, 11.5), (40, 12.5))
+
+        draw vector((40, 12), (44, 18))
+
+        draw bezier((36, 12.5), (43.5, 18.5), (42, 12.5))
+
+        draw filled rectangle((27, 31), (37, 33))
+
+        vertical_serif((37, 31), (1 - 2), 1, 5)
+        vertical_serif((37, 33), (1 - 2), (1 - 2), 5)
+
+        draw filled rectangle((27, 50.5), (40, 52.5))
+
+        draw vector((40, 52), (44, 46))
+
+        draw bezier((36, 50.5), (43.5, 46), (42, 50.5))
+    }
+}
+
+char F {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((21, 12), (27, 52))
+
+        horizontal_serif((24, 12), 1, 10)
+        horizontal_serif((24, 52), (1 - 2), 10)
+
+        draw filled rectangle((34, 11.5), (40, 12.5))
+
+        draw vector((40, 12), (44, 18))
+
+        draw bezier((36, 12.5), (43.5, 18.5), (42, 12.5))
+
+        draw filled rectangle((27, 31), (37, 33))
+
+        vertical_serif((37, 31), (1 - 2), 1, 5)
+        vertical_serif((37, 33), (1 - 2), (1 - 2), 5)
+    }
+}
+
+char G {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw bezier((52, 12), 
+                    (52, 12) - (20, -20),
+                    (52, 12) - (20, 0)
+        )
+        draw bezier((52, 12),
+                    (52, 12) - (20 * 1.25, (1 - 2) * 20),
+                    (52, 12) - (20 * 1.25, 0)
+        )
+
+        draw bezier((52, 12) - (20, (1 - 2) * 20),
+                    (52, 52),
+                    (52, 52) - (20, 0)
+        )
+        draw bezier((52, 12) - (20 * 1.25, (1 - 2) * 20),
+                    (52, 52),
+                    (52, 52) - (20 * 1.25, 0)
+        )
+
+        vertical_serif((52, 13), (1 - 2), (1 - 2), 5)
+
+        draw filled rectangle((50, 35), (55, 52))
+
+        horizontal_serif((52.5, 35), 1, 7)
+    }
+}
+
+char H {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((12, 12), (18, 52))
+
+        horizontal_serif((15, 12), 1, 10)
+        horizontal_serif((15, 52), (1 - 2), 10)
+
+        draw filled rectangle((18, 30), (36, 34))
+
+        draw filled rectangle((36, 12), (42, 52))
+
+        horizontal_serif((39, 12), 1, 10)
+        horizontal_serif((39, 52), (1 - 2), 10)
+    }
+}
+
+char I {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((21, 12), (27, 52))
+
+        horizontal_serif((24, 12), 1, 10)
+        horizontal_serif((24, 52), (1 - 2), 10)
+    }
+}
+
+char J {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((21, 12), (27, 52))
+
+        horizontal_serif((24, 12), 1, 10)
+
+        draw bezier((21, 52), (9, 62), (18, 62))
+
+        draw bezier((27, 52), (9, 72), (24, 68))
+
+        draw filled circle((9, 67), 5)
+    }
+}
+
+char K {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((21, 12), (27, 52))
+
+        horizontal_serif((24, 12), 1, 10)
+        horizontal_serif ((44, 12), 1, 8)
+
+        horizontal_serif((24, 52), (1 - 2), 10)
+        horizontal_serif((44, 52), (1 - 2), 8)
+
+        draw vector((27, 32), (44, 12))
+        draw vector((27, 33), (45, 12))
+
+        draw vector((31, 28), (44, 52))
+        draw vector((32, 27), (45, 52))
+        draw vector((33, 26), (46, 52))
+    }
+}
+
+char L {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((21, 12), (27, 52))
+
+        horizontal_serif((24, 12), 1, 10)
+        horizontal_serif((24, 52), (1 - 2), 10)
+
+        draw filled rectangle((27, 50.5), (40, 52.5))
+
+        draw vector((40, 52), (44, 46))
+
+        draw bezier((36, 50.5), (43.5, 46), (42, 50.5))
+    }
+}
+
+char M {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw vector((10, 52), (10, 12))
+
+        horizontal_serif((10, 52), (1 - 2), 5)
+        horizontal_serif((11.5, 12), 1, 5)
+
+        draw vector((10, 12), (23, 52))
+        draw vector((11, 12), (23, 52))
+        draw vector((12, 12), (24, 52))
+        draw vector((13, 12), (24, 51))
+
+        draw vector((24, 52), (38, 12))
+
+        horizontal_serif((40, 12), 1, 7)
+
+        draw filled rectangle((38, 12), (42, 52))
+
+        horizontal_serif((40, 52), (1 - 2), 7)
+    }
+}
+
+char N {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw vector((15, 52), (15, 12))
+
+        horizontal_serif((15, 52), (1 - 2), 5)
+        horizontal_serif((16, 12), 1, 5)
+
+        draw vector((15, 12), (36, 52))
+        draw vector((16, 12), (36, 51))
+        draw vector((17, 12), (36.5, 50))
+        draw vector((18, 12), (36.5, 50))
+
+        draw vector((36, 52), (36, 12))
+
+        horizontal_serif((36, 12), 1, 5)
+    }
+}
+
+char O {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled ellipse((6, 12), (36, 52))
+
+        erase filled ellipse((12, 18), (30, 46))
+    }
+}
+
+char P {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((11, 12), (17, 52))
+
+        horizontal_serif((14, 12), 1, 10)
+        horizontal_serif((14, 52), (1 - 2), 10)
+
+        bubble((17, 12), (17, 32), 10, 1)
+    }
+}
+
+char Q {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled ellipse((6, 12), (36, 52))
+
+        erase filled ellipse((12, 18), (30, 46))
+
+        draw bezier((24, 51), (32, 60), (24, 58))
+
+        draw bezier((18, 51), (32, 60), (20, 58))
+    }
+}
+
+char R {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((11, 12), (17, 52))
+
+        horizontal_serif((14, 12), 1, 10)
+        horizontal_serif((14, 52), (1 - 2), 6)
+
+        bubble((17, 12), (17, 32), 10, 1)
+
+        draw vector((17, 32), (30, 52))
+        draw vector((17, 33), (29, 52))
+
+        horizontal_serif((29, 52), (1 - 2), 5)
+    }
+}
+
+char S {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw vector((12, 12), (42, 12))
+        vertical_serif((42.5, 11.5), (1 - 2), 1, 5)
+
+        draw vector((12, 52), (42, 52))
+        vertical_serif((11.5, 52.5), 1, (1 - 2), 5)
+
+        draw vector((11, 12), (41, 52))
+        draw vector((12, 12), (42, 52))
+        draw vector((13, 12), (43, 52))
+    }
+}
+
+char T {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((21, 15), (27, 52))
+        draw filled rectangle((6, 12), (42, 15))
+
+        horizontal_serif((24, 52), (1 - 2), 10)
+
+        vertical_serif((6, 12), 1, 1, 10)
+
+        vertical_serif((42, 12), (1 - 2), 1, 10)
+    }
+}
+
+char U {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        horizontal_serif((16, 12), 1, 5)
+        horizontal_serif((40, 12), 1, 5)
+
+        draw filled rectangle((14.5, 12), (17.5, 46))
+
+        draw vector((40, 12), (40, 46))
+
+        draw bezier((40, 46), (28, 56), (40, 56))
+
+        draw bezier((28, 56), (17.5, 46), (17.5, 56))
+        draw bezier((28, 56), (14.5, 46), (14.5, 56))
+    }
+}
+
+char V {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        horizontal_serif((16, 12), 1, 5)
+        horizontal_serif((40, 12), 1, 5)
+
+        draw vector((14.5, 12), (26.5, 52))
+        draw vector((15.5, 12), (27.5, 52))
+        draw vector((16.5, 12), (28.5, 52))
+
+        draw vector((27.5, 52), (40, 12))
+        draw vector((28, 52), (41, 12))
+    }
+}
+
+char W {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        horizontal_serif((16, 12), 1, 5)
+        horizontal_serif((32, 12), 1, 5)
+        horizontal_serif((48, 12), 1, 5)
+
+        draw vector((14.5, 12), (22.5, 52))
+        draw vector((15.5, 12), (23.5, 52))
+        draw vector((16.5, 12), (24.5, 52))
+
+        draw vector((30.5, 12), (38.5, 52))
+        draw vector((31.5, 12), (39.5, 52))
+        draw vector((32.5, 12), (40.5, 52))
+
+        draw vector((23.5, 52), (31.5, 16))
+
+        draw vector((39.5, 52), (48, 12))
+        draw vector((40, 52), (49, 12))
+    }
+}
+
+char X {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw vector((10, 12), (42, 52))
+        draw vector((11, 12), (43, 52))
+        draw vector((12, 12), (44, 52))
+        draw vector((13, 12), (45, 52))
+        draw vector((14, 12), (46, 52))
+
+        draw vector((42, 12), (10, 52))
+
+        horizontal_serif((13, 12), 1, 10)
+        horizontal_serif((43, 52), (1 - 2), 10)
+
+        horizontal_serif((41, 12), 1, 5)
+        horizontal_serif((11, 52), (1 - 2), 5)
+    }
+}
+
+char Y {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw vector((9, 12), (25, 32))
+        draw vector((10, 12), (26, 32))
+        draw vector((11, 12), (27, 32))
+        draw vector((12, 12), (28, 32))
+
+        draw vector((42, 12), (26, 32))
+
+        horizontal_serif((12, 12), 1, 10)
+
+        horizontal_serif((41, 12), 1, 5)
+
+        draw filled rectangle((24.5, 32), (28.5, 52))
+
+        horizontal_serif((26.5, 52), (1 - 2), 9)
+    }
+}
+
+char Z {
+    base {
+        blank(48, 72)
+    }
+
+    steps {
+        draw filled rectangle((6, 12), (36, 14))
+        vertical_serif((6, 12), 1, 1, 6)
+
+        draw vector((33, 14), (5, 52))
+        draw vector((34, 14), (6, 52))
+        draw vector((35, 14), (7, 52))
+        draw vector((36, 14), (8, 52))
+
+        draw filled rectangle((6, 52), (36, 54))
+        vertical_serif((36, 54), (1 - 2), (1 - 2), 6)
+    }
+}

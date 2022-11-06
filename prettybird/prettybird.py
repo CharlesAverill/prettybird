@@ -3,10 +3,13 @@ import pathlib
 
 from lark import Lark
 
-from . import PrettyBirdInterpreter
+from .interpreter import PrettyBirdInterpreter
 from .formats import Format, BDF, SVG
+from .utils import get_progressbar
 
 from typing import Type
+
+from progressbar import FormatLabel  # type: ignore
 
 
 def get_args():
@@ -93,10 +96,15 @@ def main():
         """
 
     if args.bitmap:
-        for symbol in interpreter.symbols.values():
+        pbar, widgets = get_progressbar(len(interpreter.symbols.values()))
+        pbar.start()
+        for i, symbol in enumerate(interpreter.symbols.values()):
+            widgets[0] = FormatLabel("Symbol: {0}".format(symbol.identifier))
+            pbar.update(i)
             symbol.compile()
             if args.stdout:
                 print(symbol)
+        pbar.finish()
 
     """
     font = BDF(

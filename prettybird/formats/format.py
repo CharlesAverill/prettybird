@@ -4,6 +4,8 @@ from ..symbol import Symbol
 
 from typing import List
 
+import warnings
+
 
 class Format(ABC):
     def __init__(self, filename: str, font_name: str, version: str):
@@ -11,8 +13,9 @@ class Format(ABC):
         if not filename:
             filename = font_name + file_suffix
         elif not filename.lower().endswith(file_suffix):
-            raise UserWarning(
-                f'{type(self).__name__} files should end with "{file_suffix}"'
+            warnings.warn(
+                f'{type(self).__name__} files should end with "{file_suffix}"',
+                UserWarning,
             )
 
         self.filename = filename
@@ -24,5 +27,5 @@ class Format(ABC):
         self.symbols = symbols
 
     @abstractmethod
-    def compile(self, to_ttf=False, bitmap=False):
+    def compile(self, to_ttf=False, bitmap=False, save=True):
         pass

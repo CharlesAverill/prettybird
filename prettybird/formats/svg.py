@@ -7,21 +7,28 @@ import warnings
 
 from . import Format
 
+from ..utils import get_progressbar
+
 from pathlib import Path
+
+from progressbar import FormatLabel  # type: ignore
 
 
 class SVG(Format):
     def __init__(self, font_name: str, version: str, filename: str = ""):
         super().__init__(filename, font_name, version)
 
-    def compile(self, to_ttf=False, bitmap=False):
+    def compile(self, to_ttf=False, bitmap=False, save=True):
         with tempfile.TemporaryDirectory() as temp_dir_obj:
             temp_dir = Path(temp_dir_obj)
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
 
             json_data = {
-                "props": {},
+                "props": {
+                    "family": "".join(self.font_name.split()),
+                    "version": self.version,
+                },
                 "input": str(temp_dir.resolve()),
                 "output": [
                     str(
@@ -35,7 +42,17 @@ class SVG(Format):
                 "glyphs": {},
             }
 
-            for symbol in self.symbols:
+            pbar = None
+            if not all([symbol._is_function_call for symbol in self.symbols]):
+                pbar, widgets = get_progressbar(len(self.symbols))
+
+                pbar.start()
+            for i, symbol in enumerate(self.symbols):
+                if not symbol._is_function_call:
+                    widgets[0] = FormatLabel(
+                        "Symbol: {0}".format(symbol.identifier))
+                    pbar.update(i)
+
                 svg_drawing = svgwrite.Drawing(
                     temp_dir / f"{symbol.identifier}.svg",
                     size=(f"{symbol.width * 16}px", f"{symbol.height * 16}px"),
@@ -50,18 +67,23 @@ class SVG(Format):
                     str(svg_drawing.filename)
                 ).name
                 svg_drawing.save()
+            if pbar:
+                pbar.finish()
 
             temp_json = tempfile.NamedTemporaryFile(mode="w")
             json.dump(json_data, temp_json)
             temp_json.flush()
 
-            subprocess.check_output(
-                f"fontforge -lang=py -script {Path(__file__).parents[1] / 'fontforge_scripts' / 'svgs2ttf' / 'svgs2ttf'} {temp_json.name}",
-                shell=True,
-                stderr=subprocess.STDOUT,
-            )
+            if save:
+                subprocess.check_output(
+                    f"fontforge -lang=py -script {Path(__file__).parents[1] / 'fontforge_scripts' / 'svgs2ttf' / 'svgs2ttf'} {temp_json.name}",
+                    shell=True,
+                    stderr=subprocess.STDOUT,
+                )
 
             temp_json.close()
+
+            return svg_drawing
 
     @staticmethod
     def draw_bitmap_on_svg(symbol, svg_drawing):
@@ -75,14 +97,14 @@ class SVG(Format):
 
     @staticmethod
     def _mul_tup(tup, multiplier):
-        return tuple(map(lambda x: x * multiplier, tup))
+        return tuple(map(lambda x: int(x * multiplier), tup))
 
     @staticmethod
     def draw_outline_on_svg(symbol, svg_drawing):
         for i, instruction in enumerate(symbol._instructions):
             instruction_name, draw_mode, filled, inputs = instruction
 
-            if draw_mode == "draw":
+            if draw_mode == "draw" or instruction_name == "function_call":
                 to_draw = svg_drawing
             else:
                 clip_path = svg_drawing.defs.add(
@@ -104,12 +126,29 @@ class SVG(Format):
             stroke_width = "1px" if filled else "16px"
             fill = stroke if filled else "none"
 
-            if instruction_name == "vector":
+            if instruction_name == "function_call":
+                function = inputs[0]
+                function_inputs = inputs[1]
+                try:
+                    function_subspace = function.compile(
+                        symbol.width, symbol.height, function_inputs, to_svg=True
+                    )
+                except RecursionError as e:
+                    print(e)
+                    exit("recursion error")
+                for elem in function_subspace.elements:
+                    to_draw.add(elem)
+            elif instruction_name == "stop":
+                if len(inputs) == 0:
+                    break
+                elif inputs[0](inputs[1], inputs[2]):
+                    break
+            elif instruction_name == "vector":
                 to_draw.add(
                     svg_drawing.line(
                         start=SVG._mul_tup(inputs[0], 16),
                         end=SVG._mul_tup(inputs[1], 16),
-                        stroke="black",
+                        stroke=stroke,
                         stroke_width="16px",
                     )
                 )
@@ -140,6 +179,19 @@ class SVG(Format):
                         stroke=stroke,
                         stroke_width=stroke_width,
                         fill=fill,
+                    )
+                )
+            elif instruction_name == "bezier":
+                start_point, end_point, control_point = (
+                    SVG._mul_tup(inputs[0], 16),
+                    SVG._mul_tup(inputs[1], 16),
+                    SVG._mul_tup(inputs[2], 16),
+                )
+                to_draw.add(
+                    svg_drawing.path(
+                        d=f"M {start_point[0]} {start_point[1]} Q {control_point[0]} {control_point[1]} {end_point[0]} {end_point[1]}",
+                        stroke=stroke,
+                        stroke_width="8px",
                     )
                 )
             elif instruction_name == "point":

@@ -2,6 +2,7 @@ from copy import deepcopy
 from lark import Tree
 
 from .utils import Array
+from .formats import SVG
 
 
 class Function:
@@ -74,13 +75,13 @@ class Function:
 
         return instruction_arg
 
-    def compile(self, width, height, arguments):
+    def compile(self, width, height, arguments, to_svg=False):
         # Local imports because Symbol needs to import Function
         from .symbol import Symbol
         from .utils import get_empty_grid
 
         # Setup function subspace
-        subspace = Symbol(f"{self.function_name}_subspace", 0)
+        subspace = Symbol(f"{self.function_name}_subspace", 0, True)
         subspace.grid = get_empty_grid(int(width), int(height))
 
         if len(arguments) != len(self.parameter_names):
@@ -100,6 +101,10 @@ class Function:
             subspace.prepare_instruction(instruction[1], instruction[2])
             subspace.add_instruction(instruction[0], instruction[3])
 
-        subspace.compile()
-
-        return subspace.grid
+        if to_svg:
+            svg = SVG(" ", " ", "null.svg")
+            svg.add_symbols([subspace])
+            return svg.compile(save=False)
+        else:
+            subspace.compile()
+            return subspace.grid
