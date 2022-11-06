@@ -18,14 +18,17 @@ class SVG(Format):
     def __init__(self, font_name: str, version: str, filename: str = ""):
         super().__init__(filename, font_name, version)
 
-    def compile(self, to_ttf=False, bitmap=False):
+    def compile(self, to_ttf=False, bitmap=False, save=True):
         with tempfile.TemporaryDirectory() as temp_dir_obj:
             temp_dir = Path(temp_dir_obj)
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
 
             json_data = {
-                "props": {},
+                "props": {
+                    "family": "".join(self.font_name.split()),
+                    "version": self.version
+                },
                 "input": str(temp_dir.resolve()),
                 "output": [
                     str(
@@ -70,11 +73,12 @@ class SVG(Format):
             json.dump(json_data, temp_json)
             temp_json.flush()
 
-            subprocess.check_output(
-                f"fontforge -lang=py -script {Path(__file__).parents[1] / 'fontforge_scripts' / 'svgs2ttf' / 'svgs2ttf'} {temp_json.name}",
-                shell=True,
-                stderr=subprocess.STDOUT,
-            )
+            if save:
+                subprocess.check_output(
+                    f"fontforge -lang=py -script {Path(__file__).parents[1] / 'fontforge_scripts' / 'svgs2ttf' / 'svgs2ttf'} {temp_json.name}",
+                    shell=True,
+                    stderr=subprocess.STDOUT,
+                )
 
             temp_json.close()
 
@@ -92,7 +96,7 @@ class SVG(Format):
 
     @staticmethod
     def _mul_tup(tup, multiplier):
-        return tuple(map(lambda x: x * multiplier, tup))
+        return tuple(map(lambda x: int(x * multiplier), tup))
 
     @staticmethod
     def draw_outline_on_svg(symbol, svg_drawing):
@@ -143,7 +147,7 @@ class SVG(Format):
                     svg_drawing.line(
                         start=SVG._mul_tup(inputs[0], 16),
                         end=SVG._mul_tup(inputs[1], 16),
-                        stroke="black",
+                        stroke=stroke,
                         stroke_width="16px",
                     )
                 )
@@ -174,6 +178,15 @@ class SVG(Format):
                         stroke=stroke,
                         stroke_width=stroke_width,
                         fill=fill,
+                    )
+                )
+            elif instruction_name == "bezier":
+                start_point, end_point, control_point = SVG._mul_tup(inputs[0], 16), SVG._mul_tup(inputs[1], 16), SVG._mul_tup(inputs[2], 16)
+                to_draw.add(
+                    svg_drawing.path(
+                        d=f"M {start_point[0]} {start_point[1]} Q {control_point[0]} {control_point[1]} {end_point[0]} {end_point[1]}",
+                        stroke=stroke,
+                        stroke_width="8px",
                     )
                 )
             elif instruction_name == "point":
