@@ -55,8 +55,8 @@ ellipse_step: "ellipse" "(" expression "," expression "," expression ")"
 // Square with top left at point and side length NUM
 square_step: "square" "(" expression "," expression ")"
 
-// Rectangle with top left at point, width NUM, height NUM
-rectangle_step: "rectangle" "(" expression "," expression "," expression ")"
+// Rectangle with top left at point, bottom right at point
+rectangle_step: "rectangle" "(" expression "," expression ")"
 
 bezier_step: "bezier" "(" expression "," expression "," expression ")"
 

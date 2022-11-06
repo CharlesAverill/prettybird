@@ -339,6 +339,23 @@ class Symbol:
                         (center[0] + dx, dy + center[1]),
                     ],
                 )
+    
+    def rectangle(self, draw_mode, fill_mode, inputs):
+        top_left, bottom_right = inputs[0], inputs[1]
+
+        top_right = Array((bottom_right[0], top_left[1]))
+        bottom_left = Array((top_left[0], bottom_right[1]))
+
+        self.vector(draw_mode, fill_mode, [top_left, top_right])
+        self.vector(draw_mode, fill_mode, [top_right, bottom_right])
+        self.vector(draw_mode, fill_mode, [bottom_right, bottom_left])
+        self.vector(draw_mode, fill_mode, [bottom_left, top_left])
+
+        if fill_mode:
+            for y in arange(top_left[1], bottom_left[1], 1):
+                left_point = Array((top_left[0], y))
+                right_point = Array((bottom_right[0], y))
+                self.vector(draw_mode, fill_mode, [left_point, right_point])
 
     def square(self, draw_mode, fill_mode, inputs):
         """Draw a square vector onto the grid
@@ -564,4 +581,5 @@ INSTRUCTIONS_MAP = {
     "function_call": Symbol.function_call,
     "bezier": Symbol.bezier,
     "stop": Symbol.stop,
+    "rectangle": Symbol.rectangle,
 }

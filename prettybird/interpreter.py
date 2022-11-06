@@ -261,6 +261,11 @@ class PrettyBirdInterpreter(Interpreter):
         left_top = self._get_point(square_tree.children[0])
         side_length = self._get_num(square_tree.children[1])
         self.current_symbol.add_instruction("square", [left_top, side_length])
+    
+    def rectangle_step(self, rect_tree):
+        left_top = self._get_point(rect_tree.children[0])
+        right_bottom = self._get_point(rect_tree.children[1])
+        self.current_symbol.add_instruction("rectangle", [left_top, right_bottom])
 
     def ellipse_step(self, ellipse_tree):
         p1, p2 = None, None
