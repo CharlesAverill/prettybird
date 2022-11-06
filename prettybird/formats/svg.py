@@ -78,6 +78,8 @@ class SVG(Format):
 
             temp_json.close()
 
+            return svg_drawing
+
     @staticmethod
     def draw_bitmap_on_svg(symbol, svg_drawing):
         for x in range(symbol.width):
@@ -97,7 +99,7 @@ class SVG(Format):
         for i, instruction in enumerate(symbol._instructions):
             instruction_name, draw_mode, filled, inputs = instruction
 
-            if draw_mode == "draw":
+            if draw_mode == "draw" or instruction_name == "function_call":
                 to_draw = svg_drawing
             else:
                 clip_path = svg_drawing.defs.add(
@@ -119,7 +121,24 @@ class SVG(Format):
             stroke_width = "1px" if filled else "16px"
             fill = stroke if filled else "none"
 
-            if instruction_name == "vector":
+            if instruction_name == "function_call":
+                function = inputs[0]
+                function_inputs = inputs[1]
+                try:
+                    function_subspace = function.compile(
+                        symbol.width, symbol.height, function_inputs, to_svg=True
+                    )
+                except RecursionError as e:
+                    print(e)
+                    exit("recursion error")
+                for elem in function_subspace.elements:
+                    to_draw.add(elem)
+            elif instruction_name == "stop":
+                if len(inputs) == 0:
+                    break
+                elif inputs[0](inputs[1], inputs[2]):
+                    break
+            elif instruction_name == "vector":
                 to_draw.add(
                     svg_drawing.line(
                         start=SVG._mul_tup(inputs[0], 16),

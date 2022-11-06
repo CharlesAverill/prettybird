@@ -5,7 +5,7 @@ from .utils import arange
 
 
 class Symbol:
-    def __init__(self, identifier, encoding):
+    def __init__(self, identifier, encoding, is_function_call=False):
         """Initiailze new Symbol
 
         Args:
@@ -20,6 +20,7 @@ class Symbol:
         self._instruction_buffer = ()
         self._instructions = []
         self._stop_flag = False
+        self._is_function_call = is_function_call
 
     @property
     def identifier(self):
